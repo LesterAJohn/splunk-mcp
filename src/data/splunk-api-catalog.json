@@ -1,0 +1,2137 @@
+[
+  {
+    "category": "root",
+    "method": "ANY",
+    "path": "/services/"
+  },
+  {
+    "category": "admin",
+    "method": "ANY",
+    "path": "/services/admin/LDAP-groups"
+  },
+  {
+    "category": "admin",
+    "method": "ANY",
+    "path": "/services/admin/ProxySSO-auth"
+  },
+  {
+    "category": "admin",
+    "method": "ANY",
+    "path": "/services/admin/ProxySSO-auth/{proxy_name}"
+  },
+  {
+    "category": "admin",
+    "method": "ANY",
+    "path": "/services/admin/ProxySSO-auth/{proxy_name}/disable"
+  },
+  {
+    "category": "admin",
+    "method": "ANY",
+    "path": "/services/admin/ProxySSO-auth/{proxy_name}/enable"
+  },
+  {
+    "category": "admin",
+    "method": "ANY",
+    "path": "/services/admin/ProxySSO-groups"
+  },
+  {
+    "category": "admin",
+    "method": "ANY",
+    "path": "/services/admin/ProxySSO-groups/{group_name}"
+  },
+  {
+    "category": "admin",
+    "method": "ANY",
+    "path": "/services/admin/ProxySSO-user-role-map"
+  },
+  {
+    "category": "admin",
+    "method": "ANY",
+    "path": "/services/admin/ProxySSO-user-role-map/{user_name}"
+  },
+  {
+    "category": "admin",
+    "method": "ANY",
+    "path": "/services/admin/Rsa-MFA"
+  },
+  {
+    "category": "admin",
+    "method": "ANY",
+    "path": "/services/admin/Rsa-MFA-config-verify/"
+  },
+  {
+    "category": "admin",
+    "method": "ANY",
+    "path": "/services/admin/SAML-groups"
+  },
+  {
+    "category": "admin",
+    "method": "ANY",
+    "path": "/services/admin/SAML-groups/{group_name}"
+  },
+  {
+    "category": "admin",
+    "method": "ANY",
+    "path": "/services/admin/SAML-idp-metadata"
+  },
+  {
+    "category": "admin",
+    "method": "ANY",
+    "path": "/services/admin/SAML-sp-metadata"
+  },
+  {
+    "category": "admin",
+    "method": "ANY",
+    "path": "/services/admin/SAML-user-role-map"
+  },
+  {
+    "category": "admin",
+    "method": "ANY",
+    "path": "/services/admin/SAML-user-role-map/{name}"
+  },
+  {
+    "category": "admin",
+    "method": "ANY",
+    "path": "/services/admin/auth-services"
+  },
+  {
+    "category": "admin",
+    "method": "ANY",
+    "path": "/services/admin/metrics-reload/_reload"
+  },
+  {
+    "category": "admin",
+    "method": "ANY",
+    "path": "/services/admin/replicate-SAML-certs"
+  },
+  {
+    "category": "admin",
+    "method": "ANY",
+    "path": "/services/admin/summarization/"
+  },
+  {
+    "category": "admin",
+    "method": "ANY",
+    "path": "/services/admin/summarization/tstats:DM_{app}_{data_model_ID}"
+  },
+  {
+    "category": "alerts",
+    "method": "ANY",
+    "path": "/services/alerts/alert_actions"
+  },
+  {
+    "category": "alerts",
+    "method": "ANY",
+    "path": "/services/alerts/fired_alerts"
+  },
+  {
+    "category": "alerts",
+    "method": "ANY",
+    "path": "/services/alerts/fired_alerts/{name}"
+  },
+  {
+    "category": "alerts",
+    "method": "ANY",
+    "path": "/services/alerts/metric_alerts"
+  },
+  {
+    "category": "alerts",
+    "method": "ANY",
+    "path": "/services/alerts/metric_alerts/{alert_name}"
+  },
+  {
+    "category": "apps",
+    "method": "ANY",
+    "path": "/services/apps/appinstall"
+  },
+  {
+    "category": "apps",
+    "method": "ANY",
+    "path": "/services/apps/apptemplates"
+  },
+  {
+    "category": "apps",
+    "method": "ANY",
+    "path": "/services/apps/apptemplates/{name}"
+  },
+  {
+    "category": "apps",
+    "method": "ANY",
+    "path": "/services/apps/local"
+  },
+  {
+    "category": "apps",
+    "method": "ANY",
+    "path": "/services/apps/local/{name}"
+  },
+  {
+    "category": "apps",
+    "method": "ANY",
+    "path": "/services/apps/local/{name}/package"
+  },
+  {
+    "category": "apps",
+    "method": "ANY",
+    "path": "/services/apps/local/{name}/setup"
+  },
+  {
+    "category": "apps",
+    "method": "ANY",
+    "path": "/services/apps/local/{name}/update"
+  },
+  {
+    "category": "auth",
+    "method": "ANY",
+    "path": "/services/auth/login"
+  },
+  {
+    "category": "authentication",
+    "method": "ANY",
+    "path": "/services/authentication/current-context"
+  },
+  {
+    "category": "authentication",
+    "method": "ANY",
+    "path": "/services/authentication/httpauth-tokens"
+  },
+  {
+    "category": "authentication",
+    "method": "ANY",
+    "path": "/services/authentication/httpauth-tokens/{name}"
+  },
+  {
+    "category": "authentication",
+    "method": "ANY",
+    "path": "/services/authentication/providers/LDAP"
+  },
+  {
+    "category": "authentication",
+    "method": "ANY",
+    "path": "/services/authentication/providers/LDAP/{LDAP_strategy_name}"
+  },
+  {
+    "category": "authentication",
+    "method": "ANY",
+    "path": "/services/authentication/providers/LDAP/{LDAP_strategy_name}/disable"
+  },
+  {
+    "category": "authentication",
+    "method": "ANY",
+    "path": "/services/authentication/providers/LDAP/{LDAP_strategy_name}/enable"
+  },
+  {
+    "category": "authentication",
+    "method": "ANY",
+    "path": "/services/authentication/providers/SAML"
+  },
+  {
+    "category": "authentication",
+    "method": "ANY",
+    "path": "/services/authentication/providers/SAML/{stanza_name}"
+  },
+  {
+    "category": "authentication",
+    "method": "ANY",
+    "path": "/services/authentication/providers/SAML/{stanza_name}/disable"
+  },
+  {
+    "category": "authentication",
+    "method": "ANY",
+    "path": "/services/authentication/providers/SAML/{stanza_name}/enable"
+  },
+  {
+    "category": "authentication",
+    "method": "ANY",
+    "path": "/services/authentication/users"
+  },
+  {
+    "category": "authentication",
+    "method": "ANY",
+    "path": "/services/authentication/users/{name}"
+  },
+  {
+    "category": "authorization",
+    "method": "ANY",
+    "path": "/services/authorization/capabilities"
+  },
+  {
+    "category": "authorization",
+    "method": "ANY",
+    "path": "/services/authorization/fieldfilters"
+  },
+  {
+    "category": "authorization",
+    "method": "ANY",
+    "path": "/services/authorization/fieldfilters/{name}"
+  },
+  {
+    "category": "authorization",
+    "method": "ANY",
+    "path": "/services/authorization/grantable_capabilities"
+  },
+  {
+    "category": "authorization",
+    "method": "ANY",
+    "path": "/services/authorization/roles"
+  },
+  {
+    "category": "authorization",
+    "method": "ANY",
+    "path": "/services/authorization/roles/{name}"
+  },
+  {
+    "category": "authorization",
+    "method": "ANY",
+    "path": "/services/authorization/tokens"
+  },
+  {
+    "category": "authorization",
+    "method": "ANY",
+    "path": "/services/authorization/tokens/name}"
+  },
+  {
+    "category": "catalog",
+    "method": "ANY",
+    "path": "/services/catalog/metricstore/dimensions"
+  },
+  {
+    "category": "catalog",
+    "method": "ANY",
+    "path": "/services/catalog/metricstore/dimensions/{dimension-name}/values"
+  },
+  {
+    "category": "catalog",
+    "method": "ANY",
+    "path": "/services/catalog/metricstore/metrics"
+  },
+  {
+    "category": "catalog",
+    "method": "ANY",
+    "path": "/services/catalog/metricstore/rollup"
+  },
+  {
+    "category": "catalog",
+    "method": "ANY",
+    "path": "/services/catalog/metricstore/rollup/{index}"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/config"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/config/config"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/buckets"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/buckets/{bucket_id}/fix"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/buckets/{bucket_id}/fix_corrupt_bucket"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/buckets/{bucket_id}/freeze"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/buckets/{bucket_id}/remove_all"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/buckets/{bucket_id}/remove_from_peer"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/buckets/{name}"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/control/control/prune_index"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/control/control/rebalance_primaries"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/control/control/remove_peers"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/control/control/resync_bucket_from_peer"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/control/control/roll-hot-buckets"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/control/control/rolling_upgrade_finalize"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/control/control/rolling_upgrade_init"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/control/default/abort_restart"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/control/default/apply"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/control/default/cancel_bundle_push"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/control/default/maintenance"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/control/default/rollback"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/control/default/validate_bundle"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/fixup"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/generation"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/generation/{name}"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/ha_active_status"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/health"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/indexes"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/indexes/{name}"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/info"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/peers"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/peers/{name}"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/redundancy"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/sites"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/sites/{name}"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/manager/status"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/peer/buckets"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/peer/buckets/{name}"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/peer/control/control/decommission"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/peer/control/control/re-add-peer"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/peer/control/control/set_manual_detention"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/peer/info"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/searchhead/generation"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/searchhead/generation/{name}"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/searchhead/searchheadconfig"
+  },
+  {
+    "category": "cluster",
+    "method": "ANY",
+    "path": "/services/cluster/searchhead/searchheadconfig/{name}"
+  },
+  {
+    "category": "collector",
+    "method": "ANY",
+    "path": "/services/collector"
+  },
+  {
+    "category": "collector",
+    "method": "ANY",
+    "path": "/services/collector/ack"
+  },
+  {
+    "category": "collector",
+    "method": "ANY",
+    "path": "/services/collector/event"
+  },
+  {
+    "category": "collector",
+    "method": "ANY",
+    "path": "/services/collector/event/1.0"
+  },
+  {
+    "category": "collector",
+    "method": "ANY",
+    "path": "/services/collector/health"
+  },
+  {
+    "category": "collector",
+    "method": "ANY",
+    "path": "/services/collector/health/1.0"
+  },
+  {
+    "category": "collector",
+    "method": "ANY",
+    "path": "/services/collector/mint"
+  },
+  {
+    "category": "collector",
+    "method": "ANY",
+    "path": "/services/collector/mint/1.0"
+  },
+  {
+    "category": "collector",
+    "method": "ANY",
+    "path": "/services/collector/raw"
+  },
+  {
+    "category": "collector",
+    "method": "ANY",
+    "path": "/services/collector/raw/1.0"
+  },
+  {
+    "category": "collector",
+    "method": "ANY",
+    "path": "/services/collector/s2s"
+  },
+  {
+    "category": "configs",
+    "method": "ANY",
+    "path": "/services/configs/conf-{file}"
+  },
+  {
+    "category": "configs",
+    "method": "ANY",
+    "path": "/services/configs/conf-{file}/{stanza}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/commands"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/commands/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/federated/index"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/federated/index/{federated_index_name}/disable"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/federated/index/{federated_index_name}/enable"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/federated/provider"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/federated/provider/turnOffProvidersInBatch"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/federated/provider/{federated_index_name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/federated/provider/{federated_provider_name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/federated/provider/{federated_provider_name}/disable"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/federated/provider/{federated_provider_name}/enable"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/federated/settings/general"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/index-volumes"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/index-volumes/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/indexes"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/indexes-extended"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/indexes-extended/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/indexes/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/ingest/rfsdestinations"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/ingest/rulesets"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/ingest/rulesets/publish"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/ingest/rulesets/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/ad"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/ad/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/all"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/all/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/http"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/http/connections"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/http/connections/{ip_address}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/http/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/http/{name}/disable"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/http/{name}/enable"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/http/{name}/rotate"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/monitor"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/monitor/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/monitor/{name}/members"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/oneshot"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/oneshot/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/registry"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/registry/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/script"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/script/restart"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/script/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/tcp/cooked"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/tcp/cooked/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/tcp/cooked/{name}/connections"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/tcp/raw"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/tcp/raw/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/tcp/raw/{name}/connections"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/tcp/splunktcptoken"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/tcp/splunktcptoken/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/tcp/ssl"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/tcp/ssl/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/udp"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/udp/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/udp/{name}/connections"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/win-event-log-collections"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/win-event-log-collections/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/win-perfmon"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/win-perfmon/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/win-wmi-collections"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/inputs/win-wmi-collections/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/lookup-table-files/"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/lookup-table-files/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/modular-inputs"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/modular-inputs/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/outputs/tcp/default"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/outputs/tcp/default/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/outputs/tcp/group"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/outputs/tcp/group/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/outputs/tcp/server"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/outputs/tcp/server/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/outputs/tcp/server/{name}/allconnections"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/outputs/tcp/syslog"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/outputs/tcp/syslog/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/props/calcfields"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/props/calcfields/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/props/extractions"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/props/extractions/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/props/fieldaliases"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/props/fieldaliases/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/props/lookups"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/props/lookups/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/props/sourcetype-rename"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/props/sourcetype-rename/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/summaries"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/summaries/{summary_name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/transforms/extractions"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/transforms/extractions/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/transforms/lookups"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/transforms/lookups/{name}"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/transforms/metric-schema"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/transforms/statsdextractions"
+  },
+  {
+    "category": "data",
+    "method": "ANY",
+    "path": "/services/data/ui/global-banner"
+  },
+  {
+    "category": "datamodel",
+    "method": "ANY",
+    "path": "/services/datamodel/acceleration"
+  },
+  {
+    "category": "datamodel",
+    "method": "ANY",
+    "path": "/services/datamodel/acceleration/{name}"
+  },
+  {
+    "category": "datamodel",
+    "method": "ANY",
+    "path": "/services/datamodel/model"
+  },
+  {
+    "category": "datamodel",
+    "method": "ANY",
+    "path": "/services/datamodel/model/{name}"
+  },
+  {
+    "category": "datamodel",
+    "method": "ANY",
+    "path": "/services/datamodel/pivot/{name}"
+  },
+  {
+    "category": "deployment",
+    "method": "ANY",
+    "path": "/services/deployment/client"
+  },
+  {
+    "category": "deployment",
+    "method": "ANY",
+    "path": "/services/deployment/client/config"
+  },
+  {
+    "category": "deployment",
+    "method": "ANY",
+    "path": "/services/deployment/client/config/listIsDisabled"
+  },
+  {
+    "category": "deployment",
+    "method": "ANY",
+    "path": "/services/deployment/client/{name}/reload"
+  },
+  {
+    "category": "deployment",
+    "method": "ANY",
+    "path": "/services/deployment/server/applications"
+  },
+  {
+    "category": "deployment",
+    "method": "ANY",
+    "path": "/services/deployment/server/applications/{name}"
+  },
+  {
+    "category": "deployment",
+    "method": "ANY",
+    "path": "/services/deployment/server/clients"
+  },
+  {
+    "category": "deployment",
+    "method": "ANY",
+    "path": "/services/deployment/server/clients/countClients_by_machineType"
+  },
+  {
+    "category": "deployment",
+    "method": "ANY",
+    "path": "/services/deployment/server/clients/countRecentDownloads"
+  },
+  {
+    "category": "deployment",
+    "method": "ANY",
+    "path": "/services/deployment/server/clients/{name}"
+  },
+  {
+    "category": "deployment",
+    "method": "ANY",
+    "path": "/services/deployment/server/config"
+  },
+  {
+    "category": "deployment",
+    "method": "ANY",
+    "path": "/services/deployment/server/config/attributesUnsupportedInUI"
+  },
+  {
+    "category": "deployment",
+    "method": "ANY",
+    "path": "/services/deployment/server/config/listIsDisabled"
+  },
+  {
+    "category": "deployment",
+    "method": "ANY",
+    "path": "/services/deployment/server/serverclasses"
+  },
+  {
+    "category": "deployment",
+    "method": "ANY",
+    "path": "/services/deployment/server/serverclasses/rename"
+  },
+  {
+    "category": "deployment",
+    "method": "ANY",
+    "path": "/services/deployment/server/serverclasses/{name}"
+  },
+  {
+    "category": "directory",
+    "method": "ANY",
+    "path": "/services/directory"
+  },
+  {
+    "category": "directory",
+    "method": "ANY",
+    "path": "/services/directory/{name}"
+  },
+  {
+    "category": "health",
+    "method": "ANY",
+    "path": "/services/health"
+  },
+  {
+    "category": "indexing",
+    "method": "ANY",
+    "path": "/services/indexing/preview"
+  },
+  {
+    "category": "indexing",
+    "method": "ANY",
+    "path": "/services/indexing/preview/{job_id}"
+  },
+  {
+    "category": "kvstore",
+    "method": "ANY",
+    "path": "/services/kvstore/backup/create"
+  },
+  {
+    "category": "kvstore",
+    "method": "ANY",
+    "path": "/services/kvstore/backup/restore"
+  },
+  {
+    "category": "kvstore",
+    "method": "ANY",
+    "path": "/services/kvstore/control/maintenance"
+  },
+  {
+    "category": "kvstore",
+    "method": "ANY",
+    "path": "/services/kvstore/status"
+  },
+  {
+    "category": "licenser",
+    "method": "ANY",
+    "path": "/services/licenser/groups"
+  },
+  {
+    "category": "licenser",
+    "method": "ANY",
+    "path": "/services/licenser/groups/{name}"
+  },
+  {
+    "category": "licenser",
+    "method": "ANY",
+    "path": "/services/licenser/licenses"
+  },
+  {
+    "category": "licenser",
+    "method": "ANY",
+    "path": "/services/licenser/licenses/{name}"
+  },
+  {
+    "category": "licenser",
+    "method": "ANY",
+    "path": "/services/licenser/localpeer"
+  },
+  {
+    "category": "licenser",
+    "method": "ANY",
+    "path": "/services/licenser/messages"
+  },
+  {
+    "category": "licenser",
+    "method": "ANY",
+    "path": "/services/licenser/messages/{name}"
+  },
+  {
+    "category": "licenser",
+    "method": "ANY",
+    "path": "/services/licenser/peers"
+  },
+  {
+    "category": "licenser",
+    "method": "ANY",
+    "path": "/services/licenser/peers/{name}"
+  },
+  {
+    "category": "licenser",
+    "method": "ANY",
+    "path": "/services/licenser/pools"
+  },
+  {
+    "category": "licenser",
+    "method": "ANY",
+    "path": "/services/licenser/pools/{name}"
+  },
+  {
+    "category": "licenser",
+    "method": "ANY",
+    "path": "/services/licenser/stacks"
+  },
+  {
+    "category": "licenser",
+    "method": "ANY",
+    "path": "/services/licenser/stacks/{name}"
+  },
+  {
+    "category": "licenser",
+    "method": "ANY",
+    "path": "/services/licenser/usage"
+  },
+  {
+    "category": "messages",
+    "method": "ANY",
+    "path": "/services/messages"
+  },
+  {
+    "category": "messages",
+    "method": "ANY",
+    "path": "/services/messages/{name}"
+  },
+  {
+    "category": "properties",
+    "method": "ANY",
+    "path": "/services/properties"
+  },
+  {
+    "category": "properties",
+    "method": "ANY",
+    "path": "/services/properties/{file}"
+  },
+  {
+    "category": "properties",
+    "method": "ANY",
+    "path": "/services/properties/{file}/{stanza}"
+  },
+  {
+    "category": "properties",
+    "method": "ANY",
+    "path": "/services/properties/{file}/{stanza}/{key}"
+  },
+  {
+    "category": "receivers",
+    "method": "ANY",
+    "path": "/services/receivers/simple"
+  },
+  {
+    "category": "receivers",
+    "method": "ANY",
+    "path": "/services/receivers/stream"
+  },
+  {
+    "category": "replication",
+    "method": "ANY",
+    "path": "/services/replication/configuration/health"
+  },
+  {
+    "category": "replication",
+    "method": "ANY",
+    "path": "/services/replication/configuration/quarantined-assets"
+  },
+  {
+    "category": "saved",
+    "method": "ANY",
+    "path": "/services/saved/bookmarks/monitoring_console"
+  },
+  {
+    "category": "saved",
+    "method": "ANY",
+    "path": "/services/saved/eventtypes"
+  },
+  {
+    "category": "saved",
+    "method": "ANY",
+    "path": "/services/saved/eventtypes/{name}"
+  },
+  {
+    "category": "saved",
+    "method": "ANY",
+    "path": "/services/saved/searches"
+  },
+  {
+    "category": "saved",
+    "method": "ANY",
+    "path": "/services/saved/searches/{name}"
+  },
+  {
+    "category": "saved",
+    "method": "ANY",
+    "path": "/services/saved/searches/{name}/acknowledge"
+  },
+  {
+    "category": "saved",
+    "method": "ANY",
+    "path": "/services/saved/searches/{name}/dispatch"
+  },
+  {
+    "category": "saved",
+    "method": "ANY",
+    "path": "/services/saved/searches/{name}/history"
+  },
+  {
+    "category": "saved",
+    "method": "ANY",
+    "path": "/services/saved/searches/{name}/reschedule"
+  },
+  {
+    "category": "saved",
+    "method": "ANY",
+    "path": "/services/saved/searches/{name}/scheduled_times"
+  },
+  {
+    "category": "saved",
+    "method": "ANY",
+    "path": "/services/saved/searches/{name}/suppress"
+  },
+  {
+    "category": "scheduled",
+    "method": "ANY",
+    "path": "/services/scheduled/views"
+  },
+  {
+    "category": "scheduled",
+    "method": "ANY",
+    "path": "/services/scheduled/views/{name}"
+  },
+  {
+    "category": "scheduled",
+    "method": "ANY",
+    "path": "/services/scheduled/views/{name}/dispatch"
+  },
+  {
+    "category": "scheduled",
+    "method": "ANY",
+    "path": "/services/scheduled/views/{name}/history"
+  },
+  {
+    "category": "scheduled",
+    "method": "ANY",
+    "path": "/services/scheduled/views/{name}/reschedule"
+  },
+  {
+    "category": "scheduled",
+    "method": "ANY",
+    "path": "/services/scheduled/views/{name}/scheduled_times"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/concurrency-settings"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/concurrency-settings/scheduler"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/concurrency-settings/search"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/distributed/bundle-replication-files"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/distributed/bundle-replication-files/{name}"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/distributed/bundle/replication/config"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/distributed/bundle/replication/cycles"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/distributed/config"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/distributed/peers"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/fields"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/fields/{field_name}"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/fields/{field_name}/tags"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/jobs"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/jobs/export"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/jobs/{search_id}"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/jobs/{search_id}/control"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/jobs/{search_id}/events"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/jobs/{search_id}/results"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/jobs/{search_id}/results_preview"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/jobs/{search_id}/search.log"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/jobs/{search_id}/summary"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/jobs/{search_id}/timeline"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/parser"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/scheduler"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/scheduler/status"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/tags"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/tags/{tag_name}"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/timeparser"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/typeahead"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/v1/jobs/export"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/v2/jobs/export"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/v2/jobs/{search_id}/events"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/v2/jobs/{search_id}/results"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/v2/jobs/{search_id}/results_preview"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/v2/parser"
+  },
+  {
+    "category": "search",
+    "method": "ANY",
+    "path": "/services/search/workloads/policy/search_admission_control"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/control"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/control/restart"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/control/restart_webui"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/health-config"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/health-config/alert_action:{action_name}"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/health-config/feature:{feature_name}"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/health/deployment"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/health/deployment/details"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/health/splunkd"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/health/splunkd/details"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/httpsettings/proxysettings"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/httpsettings/proxysettings/proxyConfig"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/info"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/introspection"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/introspection/indexer"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/introspection/kvstore"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/introspection/kvstore/collectionstats"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/introspection/kvstore/replicasetstats"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/introspection/kvstore/serverstatus"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/introspection/search/dispatch"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/introspection/search/dispatch/Bundle_Directory_Reaper"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/introspection/search/dispatch/Compute_User_Search_Quota"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/introspection/search/dispatch/Dispatch_Directory_Reaper"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/introspection/search/dispatch/Search_StartUp_Time"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/introspection/search/distributed"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/introspection/search/saved"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/logger"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/logger/{name}"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/pipelinesets"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/roles"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/security/rotate-splunk-secret"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/settings"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/status"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/status/dispatch-artifacts"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/status/fishbucket"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/status/installed-file-integrity"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/status/limits/search-concurrency"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/status/partitions-space"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/status/resource-usage"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/status/resource-usage/hostwide"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/status/resource-usage/iostats"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/status/resource-usage/splunk-processes"
+  },
+  {
+    "category": "server",
+    "method": "ANY",
+    "path": "/services/server/sysinfo"
+  },
+  {
+    "category": "shcluster",
+    "method": "ANY",
+    "path": "/services/shcluster/captain/artifacts"
+  },
+  {
+    "category": "shcluster",
+    "method": "ANY",
+    "path": "/services/shcluster/captain/artifacts/{name}"
+  },
+  {
+    "category": "shcluster",
+    "method": "ANY",
+    "path": "/services/shcluster/captain/control/control/rotate-splunk-secret"
+  },
+  {
+    "category": "shcluster",
+    "method": "ANY",
+    "path": "/services/shcluster/captain/control/control/upgrade-finalize"
+  },
+  {
+    "category": "shcluster",
+    "method": "ANY",
+    "path": "/services/shcluster/captain/control/control/upgrade-init"
+  },
+  {
+    "category": "shcluster",
+    "method": "ANY",
+    "path": "/services/shcluster/captain/control/default/restart"
+  },
+  {
+    "category": "shcluster",
+    "method": "ANY",
+    "path": "/services/shcluster/captain/info"
+  },
+  {
+    "category": "shcluster",
+    "method": "ANY",
+    "path": "/services/shcluster/captain/jobs"
+  },
+  {
+    "category": "shcluster",
+    "method": "ANY",
+    "path": "/services/shcluster/captain/jobs/{name}"
+  },
+  {
+    "category": "shcluster",
+    "method": "ANY",
+    "path": "/services/shcluster/captain/kvmigrate/start"
+  },
+  {
+    "category": "shcluster",
+    "method": "ANY",
+    "path": "/services/shcluster/captain/kvmigrate/status"
+  },
+  {
+    "category": "shcluster",
+    "method": "ANY",
+    "path": "/services/shcluster/captain/kvmigrate/stop"
+  },
+  {
+    "category": "shcluster",
+    "method": "ANY",
+    "path": "/services/shcluster/captain/members"
+  },
+  {
+    "category": "shcluster",
+    "method": "ANY",
+    "path": "/services/shcluster/captain/members/{name}"
+  },
+  {
+    "category": "shcluster",
+    "method": "ANY",
+    "path": "/services/shcluster/config"
+  },
+  {
+    "category": "shcluster",
+    "method": "ANY",
+    "path": "/services/shcluster/config/config"
+  },
+  {
+    "category": "shcluster",
+    "method": "ANY",
+    "path": "/services/shcluster/member/artifacts"
+  },
+  {
+    "category": "shcluster",
+    "method": "ANY",
+    "path": "/services/shcluster/member/artifacts/{name}"
+  },
+  {
+    "category": "shcluster",
+    "method": "ANY",
+    "path": "/services/shcluster/member/consensus"
+  },
+  {
+    "category": "shcluster",
+    "method": "ANY",
+    "path": "/services/shcluster/member/control/control/set_manual_detention"
+  },
+  {
+    "category": "shcluster",
+    "method": "ANY",
+    "path": "/services/shcluster/member/info"
+  },
+  {
+    "category": "shcluster",
+    "method": "ANY",
+    "path": "/services/shcluster/status"
+  },
+  {
+    "category": "stack-explainer",
+    "method": "ANY",
+    "path": "/services/stack-explainer/v1/node-identity"
+  },
+  {
+    "category": "stack-explainer",
+    "method": "ANY",
+    "path": "/services/stack-explainer/v1/node-identity/{guid}"
+  },
+  {
+    "category": "stack-explainer",
+    "method": "ANY",
+    "path": "/services/stack-explainer/v1/topology"
+  },
+  {
+    "category": "stack-explainer",
+    "method": "ANY",
+    "path": "/services/stack-explainer/v1/trusted-connections"
+  },
+  {
+    "category": "stack-explainer",
+    "method": "ANY",
+    "path": "/services/stack-explainer/v1/trusted-connections/{guid}"
+  },
+  {
+    "category": "storage",
+    "method": "ANY",
+    "path": "/services/storage/passwords"
+  },
+  {
+    "category": "storage",
+    "method": "ANY",
+    "path": "/services/storage/passwords/:uname:"
+  },
+  {
+    "category": "storage",
+    "method": "ANY",
+    "path": "/services/storage/passwords/{name}"
+  },
+  {
+    "category": "upgrade",
+    "method": "ANY",
+    "path": "/services/upgrade/shc/recovery"
+  },
+  {
+    "category": "upgrade",
+    "method": "ANY",
+    "path": "/services/upgrade/shc/status"
+  },
+  {
+    "category": "upgrade",
+    "method": "ANY",
+    "path": "/services/upgrade/shc/upgrade"
+  },
+  {
+    "category": "workloads",
+    "method": "ANY",
+    "path": "/services/workloads/categories"
+  },
+  {
+    "category": "workloads",
+    "method": "ANY",
+    "path": "/services/workloads/config/disable"
+  },
+  {
+    "category": "workloads",
+    "method": "ANY",
+    "path": "/services/workloads/config/enable"
+  },
+  {
+    "category": "workloads",
+    "method": "ANY",
+    "path": "/services/workloads/config/get-base-dirname"
+  },
+  {
+    "category": "workloads",
+    "method": "ANY",
+    "path": "/services/workloads/config/preflight-checks"
+  },
+  {
+    "category": "workloads",
+    "method": "ANY",
+    "path": "/services/workloads/config/set-base-dirname"
+  },
+  {
+    "category": "workloads",
+    "method": "ANY",
+    "path": "/services/workloads/pools"
+  },
+  {
+    "category": "workloads",
+    "method": "ANY",
+    "path": "/services/workloads/rules"
+  },
+  {
+    "category": "workloads",
+    "method": "ANY",
+    "path": "/services/workloads/rules/rule_name"
+  },
+  {
+    "category": "workloads",
+    "method": "ANY",
+    "path": "/services/workloads/status"
+  },
+  {
+    "category": "itay",
+    "method": "ANY",
+    "path": "/servicesNS/itay/search/storage/collections/mycollection"
+  },
+  {
+    "category": "mark",
+    "method": "ANY",
+    "path": "/servicesNS/mark/search/storage/collections/mycollection"
+  },
+  {
+    "category": "nobody",
+    "method": "ANY",
+    "path": "/servicesNS/nobody/search"
+  },
+  {
+    "category": "nobody",
+    "method": "ANY",
+    "path": "/servicesNS/nobody/search/storage/collections/mycollection"
+  },
+  {
+    "category": "storage",
+    "method": "ANY",
+    "path": "/servicesNS/storage/collections/data/{collection}/batch_find"
+  },
+  {
+    "category": "storage",
+    "method": "ANY",
+    "path": "/servicesNS/storage/collections/data/{collection}/batch_save"
+  },
+  {
+    "category": "{owner}",
+    "method": "ANY",
+    "path": "/servicesNS/{owner}/{app}/data/ui/views/{dashboard_id}/disable"
+  },
+  {
+    "category": "{owner}",
+    "method": "ANY",
+    "path": "/servicesNS/{owner}/{app}/data/ui/views/{dashboard_id}/enable"
+  },
+  {
+    "category": "{owner}",
+    "method": "ANY",
+    "path": "/servicesNS/{owner}/{app}/storage/collections/config"
+  },
+  {
+    "category": "{owner}",
+    "method": "ANY",
+    "path": "/servicesNS/{owner}/{app}/storage/collections/config/{collection}"
+  },
+  {
+    "category": "{owner}",
+    "method": "ANY",
+    "path": "/servicesNS/{owner}/{app}/storage/collections/data/{collection}"
+  },
+  {
+    "category": "{owner}",
+    "method": "ANY",
+    "path": "/servicesNS/{owner}/{app}/storage/collections/data/{collection}/{key}"
+  },
+  {
+    "category": "{user}",
+    "method": "ANY",
+    "path": "/servicesNS/{user}/{app_name}/data/ui/panels"
+  },
+  {
+    "category": "{user}",
+    "method": "ANY",
+    "path": "/servicesNS/{user}/{app_name}/data/ui/views"
+  },
+  {
+    "category": "{user}",
+    "method": "ANY",
+    "path": "/servicesNS/{user}/{app_name}/data/ui/views/{name}"
+  },
+  {
+    "category": "{user}",
+    "method": "ANY",
+    "path": "/servicesNS/{user}/{app_name}/data/ui/views/{name}/history"
+  },
+  {
+    "category": "{user}",
+    "method": "ANY",
+    "path": "/servicesNS/{user}/{app_name}/data/ui/views/{name}/revision -d {revision_id}"
+  },
+  {
+    "category": "{user}",
+    "method": "ANY",
+    "path": "/servicesNS/{user}/{app}/"
+  }
+]
