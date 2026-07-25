@@ -64,6 +64,7 @@ Coverage approach:
 
 Catalog size in this repository:
 - 427 endpoint path patterns in src/data/splunk-api-catalog.json
+- Human-readable grouped report in docs/splunk-api-catalog.md
 
 ## Environment Variables
 
