@@ -210,3 +210,55 @@ test("token tools support multi-user update and deactivation flow", async () => 
   assert.equal(deactivate.payload.ok, true);
   assert.equal(deactivate.payload.data.deactivated, true);
 });
+
+test("mcp_tool_discovery returns guidance for all MCP tools", async () => {
+  const deps = createDependencies();
+  const server = createMcpServer({
+    name: "splunk-mcp",
+    version: "0.1.0",
+    splunkClient: deps.splunkClient,
+    configStore: deps.configStore,
+    vaultService: deps.vaultService,
+    runtimeEnv: {
+      appName: "splunk",
+      config: { defaultUserId: "default" },
+      splunk: { defaultEnvironment: "default", defaultBaseUrl: "https://127.0.0.1:8089", authMode: "splunk" }
+    }
+  });
+
+  const { payload } = await invokeTool(server, "mcp_tool_discovery", {});
+
+  assert.equal(payload.ok, true);
+  assert.equal(payload.status, 200);
+  assert.ok(payload.data.totalTools >= 19);
+  assert.equal(payload.data.returnedTools, payload.data.totalTools);
+
+  const toolNames = payload.data.tools.map((entry) => entry.name);
+  assert.ok(toolNames.includes("splunk_connection_info"));
+  assert.ok(toolNames.includes("splunk_api_request"));
+  assert.ok(toolNames.includes("mcp_token_upsert"));
+
+  const searchFiltered = await invokeTool(server, "mcp_tool_discovery", {
+    intent: "search",
+    includeSchemas: false,
+    includeExamples: false
+  });
+
+  assert.equal(searchFiltered.payload.ok, true);
+  assert.ok(searchFiltered.payload.data.returnedTools > 0);
+  assert.ok(searchFiltered.payload.data.tools.every((entry) => entry.intents.includes("search")));
+  assert.ok(searchFiltered.payload.data.tools.every((entry) => entry.schema === undefined));
+  assert.ok(searchFiltered.payload.data.tools.every((entry) => entry.examples === undefined));
+
+  const querySuggestionFiltered = await invokeTool(server, "mcp_tool_discovery", {
+    intent: "query-suggestion",
+    includeSchemas: false,
+    includeExamples: false
+  });
+
+  assert.equal(querySuggestionFiltered.payload.ok, true);
+  assert.ok(querySuggestionFiltered.payload.data.returnedTools >= payload.data.totalTools);
+  assert.ok(
+    querySuggestionFiltered.payload.data.tools.every((entry) => entry.intents.includes("query-suggestion"))
+  );
+});

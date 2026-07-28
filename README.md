@@ -58,6 +58,7 @@ User fallback behavior:
 ## Splunk API Coverage
 
 Coverage approach:
+- MCP-native query suggestion and schema discovery via mcp_tool_discovery
 - Dedicated tools for common operations (health, context, search jobs, saved searches, indexes, users)
 - Generic splunk_api_request for full path/method coverage
 - Bundled endpoint catalog derived from Splunk Enterprise REST API Reference 10.4
@@ -126,6 +127,20 @@ Error shape:
 - { ok: false, status: <http-like-code>, error: "..." }
 
 Mutating tools require authorizationKey when MCP_ADMIN_AUTH_KEY is set.
+
+### mcp_tool_discovery
+- When to use: discover all MCP tools, query recommendations, and parameter schema hints.
+- Do not use: if you already know the exact tool and parameters to call.
+- Risk: read-only, low.
+- Parameters:
+  - toolName (optional substring filter)
+  - intent (optional intent filter, such as query-suggestion, search, environment, token-management)
+  - includeSchemas (optional boolean, default true)
+  - includeExamples (optional boolean, default true)
+- Response: tool metadata with use/don't-use guidance, prerequisites/follow-ups, suggested queries, and schema hints.
+- Example:
+  - {"name":"mcp_tool_discovery","arguments":{"intent":"query-suggestion"}}
+  - {"name":"mcp_tool_discovery","arguments":{"intent":"search","includeSchemas":true}}
 
 ### splunk_connection_info
 - When to use: inspect runtime, default scope, and catalog stats.

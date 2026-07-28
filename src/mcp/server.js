@@ -14,6 +14,438 @@ import { redactObject } from "../services/security.js";
 const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 const HIGH_RISK_PATH_HINTS = ["/delete", "/remove", "/disable", "/revoke", "/decommission", "/maintenance"];
 
+const TOOL_DISCOVERY_CATALOG = [
+  {
+    name: "splunk_connection_info",
+    category: "read-only",
+    risk: "low",
+    mutating: false,
+    intents: ["onboarding", "connection", "discovery", "query-suggestion"],
+    whenToUse: "Inspect runtime defaults, scope model, and endpoint catalog counts.",
+    doNotUse: "You need live data from a Splunk endpoint.",
+    prerequisites: [],
+    followUps: ["splunk_scope_info", "splunk_environment_get"],
+    recommendedQueries: ["Show MCP and Splunk runtime defaults", "What environment and scope defaults are active?"],
+    schema: { required: [], properties: {} },
+    examples: [{ name: "splunk_connection_info", arguments: {} }]
+  },
+  {
+    name: "splunk_scope_info",
+    category: "read-only",
+    risk: "low",
+    mutating: false,
+    intents: ["onboarding", "scope", "tenanting", "query-suggestion"],
+    whenToUse: "Validate app/user scoping across Postgres and Vault paths.",
+    doNotUse: "You need a Splunk API response.",
+    prerequisites: [],
+    followUps: ["splunk_environment_get"],
+    recommendedQueries: ["Show scope model for user analyst-a"],
+    schema: {
+      required: [],
+      properties: {
+        userId: { type: "string", minLength: 1, description: "Optional target user id." }
+      }
+    },
+    examples: [{ name: "splunk_scope_info", arguments: { userId: "analyst-a" } }]
+  },
+  {
+    name: "splunk_list_endpoints",
+    category: "read-only",
+    risk: "low",
+    mutating: false,
+    intents: ["discovery", "api-exploration", "schema", "query-suggestion"],
+    whenToUse: "Discover candidate Splunk REST paths before invoking generic API calls.",
+    doNotUse: "You already know the exact path and need execution.",
+    prerequisites: ["splunk_connection_info"],
+    followUps: ["splunk_api_request"],
+    recommendedQueries: ["List search-related endpoints", "Show endpoints under /services/search"],
+    schema: {
+      required: [],
+      properties: {
+        category: { type: "string", minLength: 1 },
+        prefix: { type: "string", minLength: 1 },
+        limit: { type: "integer", minimum: 1, maximum: 500, default: 100 },
+        offset: { type: "integer", minimum: 0, default: 0 }
+      }
+    },
+    examples: [{ name: "splunk_list_endpoints", arguments: { prefix: "/services/search" } }]
+  },
+  {
+    name: "splunk_environment_get",
+    category: "read-only",
+    risk: "low",
+    mutating: false,
+    intents: ["environment", "configuration", "connection", "query-suggestion"],
+    whenToUse: "Resolve effective Splunk config for user/environment including auth secret path.",
+    doNotUse: "You need to read secret values.",
+    prerequisites: ["splunk_scope_info"],
+    followUps: ["splunk_auth_secret_set", "splunk_health_check"],
+    recommendedQueries: ["Get prod environment config", "What auth mode is configured for default user?"],
+    schema: {
+      required: [],
+      properties: {
+        userId: { type: "string", minLength: 1 },
+        environment: { type: "string", minLength: 1 }
+      }
+    },
+    examples: [{ name: "splunk_environment_get", arguments: { environment: "prod" } }]
+  },
+  {
+    name: "splunk_environment_set",
+    category: "mutating",
+    risk: "medium",
+    mutating: true,
+    intents: ["environment", "configuration", "setup", "query-suggestion"],
+    whenToUse: "Persist non-secret Splunk environment settings for a user in Postgres.",
+    doNotUse: "You need to persist credentials or tokens.",
+    prerequisites: ["splunk_environment_get"],
+    followUps: ["splunk_auth_secret_set"],
+    recommendedQueries: ["Set prod base URL and auth mode", "Update namespace defaults for search app"],
+    schema: {
+      required: ["environment"],
+      properties: {
+        userId: { type: "string", minLength: 1 },
+        environment: { type: "string", minLength: 1 },
+        baseUrl: { type: "string", format: "uri" },
+        authMode: { type: "string", enum: ["splunk", "bearer", "basic", "none"] },
+        namespaceOwner: { type: "string", minLength: 1 },
+        namespaceApp: { type: "string", minLength: 1 },
+        authSecretPath: { type: "string", minLength: 1 },
+        authorizationKey: { type: "string", minLength: 1, sensitive: true }
+      }
+    },
+    examples: [
+      {
+        name: "splunk_environment_set",
+        arguments: { environment: "prod", baseUrl: "https://splunk.example.com:8089", authMode: "splunk" }
+      }
+    ]
+  },
+  {
+    name: "splunk_auth_secret_set",
+    category: "mutating",
+    risk: "high",
+    mutating: true,
+    intents: ["credentials", "security", "rotation", "query-suggestion"],
+    whenToUse: "Create or rotate Splunk auth credentials in Vault.",
+    doNotUse: "You only need non-secret environment config.",
+    prerequisites: ["splunk_environment_get"],
+    followUps: ["splunk_health_check", "splunk_auth_secret_metadata"],
+    recommendedQueries: ["Rotate prod session key", "Set bearer token secret for dev"],
+    schema: {
+      required: [],
+      properties: {
+        userId: { type: "string", minLength: 1 },
+        environment: { type: "string", minLength: 1 },
+        path: { type: "string", minLength: 1 },
+        authMode: { type: "string", enum: ["splunk", "bearer", "basic", "none"] },
+        token: { type: "string", minLength: 1, sensitive: true },
+        sessionKey: { type: "string", minLength: 1, sensitive: true },
+        username: { type: "string", minLength: 1, sensitive: true },
+        password: { type: "string", sensitive: true },
+        authorizationKey: { type: "string", minLength: 1, sensitive: true }
+      },
+      constraints: ["At least one credential field is required: token | sessionKey | username | password"]
+    },
+    examples: [{ name: "splunk_auth_secret_set", arguments: { environment: "prod", sessionKey: "<session-key>" } }]
+  },
+  {
+    name: "splunk_auth_secret_metadata",
+    category: "read-only",
+    risk: "medium",
+    mutating: false,
+    intents: ["credentials", "security", "verification", "query-suggestion"],
+    whenToUse: "Check secret existence and fields without exposing plaintext values.",
+    doNotUse: "You need to update credentials.",
+    prerequisites: ["splunk_environment_get"],
+    followUps: ["splunk_auth_secret_set", "splunk_health_check"],
+    recommendedQueries: ["Verify prod auth secret exists", "Show auth secret metadata fields"],
+    schema: {
+      required: [],
+      properties: {
+        userId: { type: "string", minLength: 1 },
+        environment: { type: "string", minLength: 1 },
+        path: { type: "string", minLength: 1 }
+      }
+    },
+    examples: [{ name: "splunk_auth_secret_metadata", arguments: { environment: "prod" } }]
+  },
+  {
+    name: "mcp_token_upsert",
+    category: "mutating",
+    risk: "high",
+    mutating: true,
+    intents: ["http-auth", "token-management", "security", "query-suggestion"],
+    whenToUse: "Create or update per-user bearer token index entries for HTTP MCP auth.",
+    doNotUse: "You only need read-only token inventory.",
+    prerequisites: ["splunk_scope_info"],
+    followUps: ["mcp_token_list", "mcp_token_deactivate"],
+    recommendedQueries: ["Add bearer token for analyst-a", "Rotate token metadata for default user"],
+    schema: {
+      required: ["token"],
+      properties: {
+        targetUserId: { type: "string", minLength: 1 },
+        token: { type: "string", minLength: 1, sensitive: true },
+        tokenId: { type: "string", minLength: 1 },
+        scopes: { oneOf: [{ type: "string", minLength: 1 }, { type: "array", items: { type: "string", minLength: 1 } }] },
+        audience: { oneOf: [{ type: "string", minLength: 1 }, { type: "array", items: { type: "string", minLength: 1 } }] },
+        expiresAt: { type: "string", description: "Unix epoch seconds or ISO timestamp." },
+        authorizationKey: { type: "string", minLength: 1, sensitive: true }
+      }
+    },
+    examples: [{ name: "mcp_token_upsert", arguments: { targetUserId: "default", token: "<opaque-token>" } }]
+  },
+  {
+    name: "mcp_token_list",
+    category: "read-only",
+    risk: "medium",
+    mutating: false,
+    intents: ["http-auth", "token-management", "security", "query-suggestion"],
+    whenToUse: "List per-user token metadata from Vault token index.",
+    doNotUse: "You need to create or deactivate a token.",
+    prerequisites: ["splunk_scope_info"],
+    followUps: ["mcp_token_upsert", "mcp_token_deactivate"],
+    recommendedQueries: ["List token hashes for analyst-a", "Show HTTP token inventory"],
+    schema: {
+      required: [],
+      properties: {
+        targetUserId: { type: "string", minLength: 1 }
+      }
+    },
+    examples: [{ name: "mcp_token_list", arguments: { targetUserId: "default" } }]
+  },
+  {
+    name: "mcp_token_deactivate",
+    category: "mutating",
+    risk: "high",
+    mutating: true,
+    intents: ["http-auth", "token-management", "security", "query-suggestion"],
+    whenToUse: "Disable a token entry by hash or plaintext token value.",
+    doNotUse: "You want to rotate to a new token in the same step.",
+    prerequisites: ["mcp_token_list"],
+    followUps: ["mcp_token_upsert"],
+    recommendedQueries: ["Deactivate compromised token hash", "Disable token for default user"],
+    schema: {
+      required: [],
+      properties: {
+        targetUserId: { type: "string", minLength: 1 },
+        tokenHash: { type: "string", minLength: 1 },
+        token: { type: "string", minLength: 1, sensitive: true },
+        authorizationKey: { type: "string", minLength: 1, sensitive: true }
+      },
+      constraints: ["Provide either tokenHash or token."]
+    },
+    examples: [{ name: "mcp_token_deactivate", arguments: { tokenHash: "<sha256>", targetUserId: "default" } }]
+  },
+  {
+    name: "splunk_health_check",
+    category: "read-only",
+    risk: "low",
+    mutating: false,
+    intents: ["connection", "verification", "health", "query-suggestion"],
+    whenToUse: "Validate authenticated connectivity via /services/server/info.",
+    doNotUse: "You need deep diagnostics or custom endpoint data.",
+    prerequisites: ["splunk_environment_get", "splunk_auth_secret_set"],
+    followUps: ["splunk_search_job_create", "splunk_api_request"],
+    recommendedQueries: ["Run connectivity check for prod"],
+    schema: {
+      required: [],
+      properties: {
+        userId: { type: "string", minLength: 1 },
+        environment: { type: "string", minLength: 1 }
+      }
+    },
+    examples: [{ name: "splunk_health_check", arguments: { environment: "prod" } }]
+  },
+  {
+    name: "splunk_search_job_create",
+    category: "mutating",
+    risk: "medium",
+    mutating: true,
+    intents: ["search", "analytics", "jobs", "query-suggestion"],
+    whenToUse: "Dispatch a search job to Splunk.",
+    doNotUse: "You only need endpoint metadata or saved-search inventory.",
+    prerequisites: ["splunk_health_check"],
+    followUps: ["splunk_search_job_status", "splunk_search_job_results", "splunk_search_job_cancel"],
+    recommendedQueries: ["Create search job for _internal logs", "Dispatch ad-hoc SPL query"],
+    schema: {
+      required: ["search"],
+      properties: {
+        userId: { type: "string", minLength: 1 },
+        environment: { type: "string", minLength: 1 },
+        search: { type: "string", minLength: 1 },
+        exec_mode: { type: "string", minLength: 1 },
+        earliest_time: { type: "string", minLength: 1 },
+        latest_time: { type: "string", minLength: 1 },
+        authorizationKey: { type: "string", minLength: 1, sensitive: true }
+      }
+    },
+    examples: [{ name: "splunk_search_job_create", arguments: { search: "search index=_internal | head 10" } }]
+  },
+  {
+    name: "splunk_search_job_status",
+    category: "read-only",
+    risk: "low",
+    mutating: false,
+    intents: ["search", "analytics", "jobs", "query-suggestion"],
+    whenToUse: "Poll or inspect status for a SID returned by search job creation.",
+    doNotUse: "You need result rows.",
+    prerequisites: ["splunk_search_job_create"],
+    followUps: ["splunk_search_job_results", "splunk_search_job_cancel"],
+    recommendedQueries: ["Check status for SID"],
+    schema: {
+      required: ["sid"],
+      properties: {
+        userId: { type: "string", minLength: 1 },
+        environment: { type: "string", minLength: 1 },
+        sid: { type: "string", minLength: 1 }
+      }
+    },
+    examples: [{ name: "splunk_search_job_status", arguments: { sid: "<sid>" } }]
+  },
+  {
+    name: "splunk_search_job_results",
+    category: "read-only",
+    risk: "medium",
+    mutating: false,
+    intents: ["search", "analytics", "jobs", "query-suggestion"],
+    whenToUse: "Retrieve paginated result rows for a completed or running SID.",
+    doNotUse: "You need to cancel a job.",
+    prerequisites: ["splunk_search_job_create"],
+    followUps: ["splunk_search_job_cancel"],
+    recommendedQueries: ["Fetch top 100 rows for SID", "Paginate search results"],
+    schema: {
+      required: ["sid"],
+      properties: {
+        userId: { type: "string", minLength: 1 },
+        environment: { type: "string", minLength: 1 },
+        sid: { type: "string", minLength: 1 },
+        count: { type: "integer", minimum: 1, maximum: 10000 },
+        offset: { type: "integer", minimum: 0 }
+      }
+    },
+    examples: [{ name: "splunk_search_job_results", arguments: { sid: "<sid>", count: 100 } }]
+  },
+  {
+    name: "splunk_search_job_cancel",
+    category: "mutating",
+    risk: "high",
+    mutating: true,
+    intents: ["search", "analytics", "jobs", "query-suggestion"],
+    whenToUse: "Cancel an in-flight search job.",
+    doNotUse: "The job already completed and results are available.",
+    prerequisites: ["splunk_search_job_status"],
+    followUps: [],
+    recommendedQueries: ["Cancel SID <sid>"],
+    schema: {
+      required: ["sid"],
+      properties: {
+        userId: { type: "string", minLength: 1 },
+        environment: { type: "string", minLength: 1 },
+        sid: { type: "string", minLength: 1 },
+        authorizationKey: { type: "string", minLength: 1, sensitive: true }
+      }
+    },
+    examples: [{ name: "splunk_search_job_cancel", arguments: { sid: "<sid>" } }]
+  },
+  {
+    name: "splunk_saved_searches_list",
+    category: "read-only",
+    risk: "low",
+    mutating: false,
+    intents: ["search", "metadata", "saved-searches", "query-suggestion"],
+    whenToUse: "List saved searches for a namespace.",
+    doNotUse: "You need ad-hoc search execution.",
+    prerequisites: ["splunk_health_check"],
+    followUps: ["splunk_search_job_create", "splunk_api_request"],
+    recommendedQueries: ["List saved searches for app search", "Enumerate saved searches in namespace"],
+    schema: {
+      required: [],
+      properties: {
+        userId: { type: "string", minLength: 1 },
+        environment: { type: "string", minLength: 1 },
+        owner: { type: "string", minLength: 1 },
+        app: { type: "string", minLength: 1 },
+        count: { type: "integer", minimum: 1, maximum: 5000 },
+        offset: { type: "integer", minimum: 0 }
+      }
+    },
+    examples: [{ name: "splunk_saved_searches_list", arguments: { owner: "-", app: "search" } }]
+  },
+  {
+    name: "splunk_indexes_list",
+    category: "read-only",
+    risk: "low",
+    mutating: false,
+    intents: ["metadata", "indexes", "inventory", "query-suggestion"],
+    whenToUse: "List available Splunk indexes.",
+    doNotUse: "You need user accounts or search jobs.",
+    prerequisites: ["splunk_health_check"],
+    followUps: ["splunk_search_job_create"],
+    recommendedQueries: ["List all indexes"],
+    schema: {
+      required: [],
+      properties: {
+        userId: { type: "string", minLength: 1 },
+        environment: { type: "string", minLength: 1 }
+      }
+    },
+    examples: [{ name: "splunk_indexes_list", arguments: {} }]
+  },
+  {
+    name: "splunk_users_list",
+    category: "read-only",
+    risk: "medium",
+    mutating: false,
+    intents: ["metadata", "users", "inventory", "query-suggestion"],
+    whenToUse: "List Splunk user accounts.",
+    doNotUse: "You need token index operations.",
+    prerequisites: ["splunk_health_check"],
+    followUps: ["splunk_api_request"],
+    recommendedQueries: ["List Splunk users"],
+    schema: {
+      required: [],
+      properties: {
+        userId: { type: "string", minLength: 1 },
+        environment: { type: "string", minLength: 1 }
+      }
+    },
+    examples: [{ name: "splunk_users_list", arguments: {} }]
+  },
+  {
+    name: "splunk_api_request",
+    category: "read-write",
+    risk: "high",
+    mutating: true,
+    intents: ["generic", "advanced", "fallback", "query-suggestion"],
+    whenToUse: "Invoke arbitrary Splunk REST paths when no dedicated tool exists.",
+    doNotUse: "A dedicated tool already fits your task.",
+    prerequisites: ["splunk_list_endpoints", "splunk_environment_get", "splunk_auth_secret_set"],
+    followUps: ["splunk_search_job_status", "splunk_search_job_results"],
+    recommendedQueries: ["Call server info endpoint", "Run custom GET against /servicesNS path"],
+    schema: {
+      required: ["method", "path"],
+      properties: {
+        userId: { type: "string", minLength: 1 },
+        environment: { type: "string", minLength: 1 },
+        method: { type: "string", minLength: 1 },
+        path: { type: "string", minLength: 1, description: "Must start with /services or /servicesNS." },
+        query: { type: "object", additionalProperties: true },
+        body: { type: "any" },
+        headers: { type: "object", additionalProperties: { type: "string" } },
+        bodyFormat: { type: "string", enum: ["json", "form", "raw"] },
+        authorizationKey: { type: "string", minLength: 1, sensitive: true }
+      }
+    },
+    examples: [
+      {
+        name: "splunk_api_request",
+        arguments: { method: "GET", path: "/services/server/info", query: { output_mode: "json" } }
+      }
+    ]
+  }
+];
+
 function normalizeMethod(method) {
   return String(method ?? "GET").trim().toUpperCase();
 }
@@ -84,6 +516,70 @@ function parseOptionalExpiresAt(value) {
 function isHighRiskSplunkPath(path) {
   const normalized = normalizePath(path).toLowerCase();
   return HIGH_RISK_PATH_HINTS.some((hint) => normalized.includes(hint));
+}
+
+function buildToolDiscoveryResponse({ toolName, intent, includeSchemas = true, includeExamples = true } = {}) {
+  const normalizedToolName = String(toolName ?? "").trim().toLowerCase();
+  const normalizedIntent = String(intent ?? "").trim().toLowerCase();
+
+  let tools = TOOL_DISCOVERY_CATALOG;
+
+  if (normalizedToolName) {
+    tools = tools.filter((entry) => String(entry.name).toLowerCase().includes(normalizedToolName));
+  }
+
+  if (normalizedIntent) {
+    tools = tools.filter((entry) =>
+      Array.isArray(entry.intents) && entry.intents.some((label) => String(label).toLowerCase().includes(normalizedIntent))
+    );
+  }
+
+  const byIntent = TOOL_DISCOVERY_CATALOG.reduce((acc, entry) => {
+    for (const label of entry.intents ?? []) {
+      acc[label] = (acc[label] ?? 0) + 1;
+    }
+    return acc;
+  }, {});
+
+  const normalizedTools = tools.map((entry) => ({
+    name: entry.name,
+    category: entry.category,
+    risk: entry.risk,
+    mutating: entry.mutating,
+    intents: entry.intents,
+    whenToUse: entry.whenToUse,
+    doNotUse: entry.doNotUse,
+    prerequisites: entry.prerequisites,
+    followUps: entry.followUps,
+    recommendedQueries: entry.recommendedQueries,
+    ...(includeSchemas ? { schema: entry.schema } : {}),
+    ...(includeExamples ? { examples: entry.examples } : {})
+  }));
+
+  return {
+    ok: true,
+    status: 200,
+    data: {
+      totalTools: TOOL_DISCOVERY_CATALOG.length,
+      returnedTools: normalizedTools.length,
+      filters: {
+        toolName: normalizedToolName || null,
+        intent: normalizedIntent || null,
+        includeSchemas: Boolean(includeSchemas),
+        includeExamples: Boolean(includeExamples)
+      },
+      intentIndex: Object.entries(byIntent)
+        .map(([label, count]) => ({ intent: label, toolCount: count }))
+        .sort((a, b) => a.intent.localeCompare(b.intent)),
+      recommendationGuide: {
+        onboardingSequence: ["splunk_connection_info", "splunk_scope_info", "splunk_environment_get", "splunk_health_check"],
+        safeQueryPreference:
+          "Filter by intent=query-suggestion for broad recommendations. Prefer dedicated tools first; use splunk_api_request only for uncovered endpoints.",
+        mutationSafety: "Any mutating tool may require authorizationKey when MCP_ADMIN_AUTH_KEY is configured."
+      },
+      tools: normalizedTools
+    }
+  };
 }
 
 export function createMcpServer({ name, version, splunkClient, configStore, vaultService, runtimeEnv }) {
@@ -295,6 +791,35 @@ export function createMcpServer({ name, version, splunkClient, configStore, vaul
         }
       }
     }))
+  );
+
+  server.tool(
+    "mcp_tool_discovery",
+    toolSpecDescription({
+      purpose: "you need query suggestions and input schema discovery across all MCP tools.",
+      doNotUse: "you already know exactly which tool and parameters to call.",
+      category: "read-only",
+      risk: "low",
+      permissions: "none",
+      envBehavior: "returns static recommendations aligned to this MCP tool catalog.",
+      params: "toolName/intent optional filters; includeSchemas/includeExamples optional booleans.",
+      responseShape: "{ ok, status, data: { tools[], intentIndex[], recommendationGuide } }",
+      failures: "none expected; invalid filters return empty tools array.",
+      prerequisites: "none",
+      followUps: "any recommended tool listed in tools[].",
+      warnings: "schema hints are guidance and may evolve with future releases.",
+      examples:
+        '{"name":"mcp_tool_discovery","arguments":{}} | {"name":"mcp_tool_discovery","arguments":{"intent":"search","includeSchemas":true}}'
+    }),
+    {
+      toolName: z.string().min(1).optional(),
+      intent: z.string().min(1).optional(),
+      includeSchemas: z.boolean().optional(),
+      includeExamples: z.boolean().optional()
+    },
+    withErrorHandling(async ({ toolName, intent, includeSchemas = true, includeExamples = true }) =>
+      buildToolDiscoveryResponse({ toolName, intent, includeSchemas, includeExamples })
+    )
   );
 
   server.tool(
