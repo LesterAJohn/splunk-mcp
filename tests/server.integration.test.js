@@ -44,6 +44,10 @@ function createDependencies() {
         status: 200,
         method: payload.method,
         path: payload.path,
+        apiFamily: payload.apiFamily,
+        query: payload.query,
+        body: payload.body,
+        bodyFormat: payload.bodyFormat,
         data: { ok: true }
       };
     }
@@ -236,6 +240,11 @@ test("mcp_tool_discovery returns guidance for all MCP tools", async () => {
   const toolNames = payload.data.tools.map((entry) => entry.name);
   assert.ok(toolNames.includes("splunk_connection_info"));
   assert.ok(toolNames.includes("splunk_api_request"));
+  assert.ok(toolNames.includes("splunk_soar_api_request"));
+  assert.ok(toolNames.includes("splunk_soar_container_get"));
+  assert.ok(toolNames.includes("splunk_soar_container_find_by_source"));
+  assert.ok(toolNames.includes("splunk_soar_container_create"));
+  assert.ok(toolNames.includes("splunk_soar_artifact_create"));
   assert.ok(toolNames.includes("mcp_token_upsert"));
 
   const searchFiltered = await invokeTool(server, "mcp_tool_discovery", {
@@ -261,4 +270,70 @@ test("mcp_tool_discovery returns guidance for all MCP tools", async () => {
   assert.ok(
     querySuggestionFiltered.payload.data.tools.every((entry) => entry.intents.includes("query-suggestion"))
   );
+});
+
+test("SOAR tools use /rest product family", async () => {
+  const deps = createDependencies();
+  const server = createMcpServer({
+    name: "splunk-mcp",
+    version: "0.1.0",
+    splunkClient: deps.splunkClient,
+    configStore: deps.configStore,
+    vaultService: deps.vaultService,
+    runtimeEnv: {
+      appName: "splunk",
+      config: { defaultUserId: "default" },
+      splunk: { defaultEnvironment: "default", defaultBaseUrl: "https://127.0.0.1:8089", authMode: "splunk" }
+    }
+  });
+
+  const genericSoar = await invokeTool(server, "splunk_api_request", {
+    product: "soar",
+    method: "GET",
+    path: "/rest/container/1"
+  });
+  assert.equal(genericSoar.payload.ok, true);
+  assert.equal(genericSoar.payload.data.response.apiFamily, "soar");
+
+  const dedicatedSoar = await invokeTool(server, "splunk_soar_api_request", {
+    method: "GET",
+    path: "/rest/container/1"
+  });
+  assert.equal(dedicatedSoar.payload.ok, true);
+  assert.equal(dedicatedSoar.payload.data.response.apiFamily, "soar");
+
+  const containerGet = await invokeTool(server, "splunk_soar_container_get", {
+    containerId: 42
+  });
+  assert.equal(containerGet.payload.ok, true);
+  assert.equal(containerGet.payload.data.response.path, "/rest/container/42");
+
+  const containerFind = await invokeTool(server, "splunk_soar_container_find_by_source", {
+    sourceDataIdentifier: "12387",
+    pageSize: 1
+  });
+  assert.equal(containerFind.payload.ok, true);
+  assert.equal(containerFind.payload.data.response.path, "/rest/container");
+  assert.equal(containerFind.payload.data.response.query._filter_source_data_identifier, '"12387"');
+  assert.equal(containerFind.payload.data.response.query.page_size, 1);
+
+  const containerCreate = await invokeTool(server, "splunk_soar_container_create", {
+    name: "new container",
+    label: "events",
+    runAutomation: false
+  });
+  assert.equal(containerCreate.payload.ok, true);
+  assert.equal(containerCreate.payload.data.response.path, "/rest/container");
+  assert.equal(containerCreate.payload.data.response.bodyFormat, "json");
+  assert.equal(containerCreate.payload.data.response.body.run_automation, false);
+
+  const artifactCreate = await invokeTool(server, "splunk_soar_artifact_create", {
+    containerId: 42,
+    label: "event",
+    cef: { sourceAddress: "1.2.3.4" }
+  });
+  assert.equal(artifactCreate.payload.ok, true);
+  assert.equal(artifactCreate.payload.data.response.path, "/rest/artifact");
+  assert.equal(artifactCreate.payload.data.response.body.container_id, 42);
+  assert.equal(artifactCreate.payload.data.response.body.label, "event");
 });

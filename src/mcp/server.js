@@ -13,6 +13,8 @@ import { redactObject } from "../services/security.js";
 
 const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 const HIGH_RISK_PATH_HINTS = ["/delete", "/remove", "/disable", "/revoke", "/decommission", "/maintenance"];
+const SPLUNK_PRODUCTS = new Set(["enterprise", "soar"]);
+const SPLUNK_AUTH_MODES = ["splunk", "bearer", "basic", "phantom", "none"];
 
 const TOOL_DISCOVERY_CATALOG = [
   {
@@ -106,8 +108,9 @@ const TOOL_DISCOVERY_CATALOG = [
       properties: {
         userId: { type: "string", minLength: 1 },
         environment: { type: "string", minLength: 1 },
+        product: { type: "string", enum: ["enterprise", "soar"] },
         baseUrl: { type: "string", format: "uri" },
-        authMode: { type: "string", enum: ["splunk", "bearer", "basic", "none"] },
+        authMode: { type: "string", enum: ["splunk", "bearer", "basic", "phantom", "none"] },
         namespaceOwner: { type: "string", minLength: 1 },
         namespaceApp: { type: "string", minLength: 1 },
         authSecretPath: { type: "string", minLength: 1 },
@@ -138,8 +141,9 @@ const TOOL_DISCOVERY_CATALOG = [
         userId: { type: "string", minLength: 1 },
         environment: { type: "string", minLength: 1 },
         path: { type: "string", minLength: 1 },
-        authMode: { type: "string", enum: ["splunk", "bearer", "basic", "none"] },
+        authMode: { type: "string", enum: ["splunk", "bearer", "basic", "phantom", "none"] },
         token: { type: "string", minLength: 1, sensitive: true },
+        phAuthToken: { type: "string", minLength: 1, sensitive: true },
         sessionKey: { type: "string", minLength: 1, sensitive: true },
         username: { type: "string", minLength: 1, sensitive: true },
         password: { type: "string", sensitive: true },
@@ -243,7 +247,7 @@ const TOOL_DISCOVERY_CATALOG = [
     risk: "low",
     mutating: false,
     intents: ["connection", "verification", "health", "query-suggestion"],
-    whenToUse: "Validate authenticated connectivity via /services/server/info.",
+    whenToUse: "Validate authenticated connectivity for the configured product (Enterprise or SOAR).",
     doNotUse: "You need deep diagnostics or custom endpoint data.",
     prerequisites: ["splunk_environment_get", "splunk_auth_secret_set"],
     followUps: ["splunk_search_job_create", "splunk_api_request"],
@@ -418,7 +422,7 @@ const TOOL_DISCOVERY_CATALOG = [
     risk: "high",
     mutating: true,
     intents: ["generic", "advanced", "fallback", "query-suggestion"],
-    whenToUse: "Invoke arbitrary Splunk REST paths when no dedicated tool exists.",
+    whenToUse: "Invoke arbitrary Splunk Enterprise REST paths when no dedicated tool exists.",
     doNotUse: "A dedicated tool already fits your task.",
     prerequisites: ["splunk_list_endpoints", "splunk_environment_get", "splunk_auth_secret_set"],
     followUps: ["splunk_search_job_status", "splunk_search_job_results"],
@@ -428,8 +432,13 @@ const TOOL_DISCOVERY_CATALOG = [
       properties: {
         userId: { type: "string", minLength: 1 },
         environment: { type: "string", minLength: 1 },
+        product: { type: "string", enum: ["enterprise", "soar"], description: "Overrides environment product for this request." },
         method: { type: "string", minLength: 1 },
-        path: { type: "string", minLength: 1, description: "Must start with /services or /servicesNS." },
+        path: {
+          type: "string",
+          minLength: 1,
+          description: "Enterprise: /services or /servicesNS. SOAR: /rest."
+        },
         query: { type: "object", additionalProperties: true },
         body: { type: "any" },
         headers: { type: "object", additionalProperties: { type: "string" } },
@@ -441,6 +450,154 @@ const TOOL_DISCOVERY_CATALOG = [
       {
         name: "splunk_api_request",
         arguments: { method: "GET", path: "/services/server/info", query: { output_mode: "json" } }
+      }
+    ]
+  },
+  {
+    name: "splunk_soar_api_request",
+    category: "read-write",
+    risk: "high",
+    mutating: true,
+    intents: ["soar", "phantom", "generic", "advanced", "query-suggestion"],
+    whenToUse: "Invoke Splunk SOAR (Phantom) REST paths such as /rest/container and /rest/artifact.",
+    doNotUse: "You need Splunk Enterprise /services endpoints.",
+    prerequisites: ["splunk_environment_set", "splunk_auth_secret_set"],
+    followUps: ["splunk_auth_secret_metadata"],
+    recommendedQueries: ["Get one container", "Create a container with run_automation=false"],
+    schema: {
+      required: ["method", "path"],
+      properties: {
+        userId: { type: "string", minLength: 1 },
+        environment: { type: "string", minLength: 1 },
+        method: { type: "string", minLength: 1 },
+        path: { type: "string", minLength: 1, description: "Must start with /rest." },
+        query: { type: "object", additionalProperties: true },
+        body: { type: "any" },
+        headers: { type: "object", additionalProperties: { type: "string" } },
+        bodyFormat: { type: "string", enum: ["json", "form", "raw"] },
+        authorizationKey: { type: "string", minLength: 1, sensitive: true }
+      }
+    },
+    examples: [
+      {
+        name: "splunk_soar_api_request",
+        arguments: { method: "GET", path: "/rest/container/1" }
+      }
+    ]
+  },
+  {
+    name: "splunk_soar_container_get",
+    category: "read-only",
+    risk: "low",
+    mutating: false,
+    intents: ["soar", "phantom", "containers", "query-suggestion"],
+    whenToUse: "Retrieve one SOAR/Phantom container by id.",
+    doNotUse: "You need to create or update records.",
+    prerequisites: ["splunk_environment_set", "splunk_auth_secret_set"],
+    followUps: ["splunk_soar_artifact_create"],
+    recommendedQueries: ["Get container 12345", "Inspect incident container details"],
+    schema: {
+      required: ["containerId"],
+      properties: {
+        userId: { type: "string", minLength: 1 },
+        environment: { type: "string", minLength: 1 },
+        containerId: { oneOf: [{ type: "integer", minimum: 1 }, { type: "string", minLength: 1 }] }
+      }
+    },
+    examples: [{ name: "splunk_soar_container_get", arguments: { containerId: 1 } }]
+  },
+  {
+    name: "splunk_soar_container_find_by_source",
+    category: "read-only",
+    risk: "low",
+    mutating: false,
+    intents: ["soar", "phantom", "containers", "dedupe", "query-suggestion"],
+    whenToUse: "Find existing SOAR/Phantom containers by source_data_identifier for deduplication workflows.",
+    doNotUse: "You already know the exact container id.",
+    prerequisites: ["splunk_environment_set", "splunk_auth_secret_set"],
+    followUps: ["splunk_soar_container_get", "splunk_soar_artifact_create"],
+    recommendedQueries: ["Find incident by source_data_identifier", "Check if indicator id already exists"],
+    schema: {
+      required: ["sourceDataIdentifier"],
+      properties: {
+        userId: { type: "string", minLength: 1 },
+        environment: { type: "string", minLength: 1 },
+        sourceDataIdentifier: { type: "string", minLength: 1 },
+        pageSize: { type: "integer", minimum: 1, maximum: 200 },
+        page: { type: "integer", minimum: 0 }
+      }
+    },
+    examples: [
+      {
+        name: "splunk_soar_container_find_by_source",
+        arguments: { sourceDataIdentifier: "12387", pageSize: 1 }
+      }
+    ]
+  },
+  {
+    name: "splunk_soar_container_create",
+    category: "mutating",
+    risk: "high",
+    mutating: true,
+    intents: ["soar", "phantom", "containers", "ingest", "query-suggestion"],
+    whenToUse: "Create a SOAR/Phantom container (incident).",
+    doNotUse: "You only need to read existing records.",
+    prerequisites: ["splunk_environment_set", "splunk_auth_secret_set"],
+    followUps: ["splunk_soar_artifact_create", "splunk_soar_container_get"],
+    recommendedQueries: ["Create a container for suspicious login", "Create container with run_automation false"],
+    schema: {
+      required: ["name", "label"],
+      properties: {
+        userId: { type: "string", minLength: 1 },
+        environment: { type: "string", minLength: 1 },
+        name: { type: "string", minLength: 1 },
+        label: { type: "string", minLength: 1 },
+        description: { type: "string" },
+        severity: { type: "string", enum: ["low", "medium", "high"] },
+        sensitivity: { type: "string", enum: ["white", "green", "amber", "red"] },
+        sourceDataIdentifier: { type: "string", minLength: 1 },
+        runAutomation: { type: "boolean" },
+        authorizationKey: { type: "string", minLength: 1, sensitive: true }
+      }
+    },
+    examples: [
+      {
+        name: "splunk_soar_container_create",
+        arguments: { name: "new container", label: "events", description: "Created from MCP" }
+      }
+    ]
+  },
+  {
+    name: "splunk_soar_artifact_create",
+    category: "mutating",
+    risk: "high",
+    mutating: true,
+    intents: ["soar", "phantom", "artifacts", "ingest", "query-suggestion"],
+    whenToUse: "Create a SOAR/Phantom artifact linked to a container.",
+    doNotUse: "You need to create a container first.",
+    prerequisites: ["splunk_soar_container_create"],
+    followUps: ["splunk_soar_container_get"],
+    recommendedQueries: ["Attach IOC artifact to container", "Add CEF/data artifact fields"],
+    schema: {
+      required: ["containerId", "label"],
+      properties: {
+        userId: { type: "string", minLength: 1 },
+        environment: { type: "string", minLength: 1 },
+        containerId: { oneOf: [{ type: "integer", minimum: 1 }, { type: "string", minLength: 1 }] },
+        label: { type: "string", minLength: 1 },
+        name: { type: "string", minLength: 1 },
+        sourceDataIdentifier: { type: "string", minLength: 1 },
+        severity: { type: "string", enum: ["low", "medium", "high"] },
+        runAutomation: { type: "boolean" },
+        cef: { type: "object", additionalProperties: true },
+        data: { type: "object", additionalProperties: true },
+        authorizationKey: { type: "string", minLength: 1, sensitive: true }
+      }
+    },
+    examples: [
+      {
+        name: "splunk_soar_artifact_create",
+        arguments: { containerId: 1, label: "event", cef: { sourceAddress: "1.2.3.4" } }
       }
     ]
   }
@@ -457,6 +614,16 @@ function normalizePath(path) {
   }
 
   return raw.startsWith("/") ? raw : `/${raw}`;
+}
+
+function normalizeSplunkProduct(product) {
+  const normalized = String(product ?? "enterprise").trim().toLowerCase() || "enterprise";
+  if (!SPLUNK_PRODUCTS.has(normalized)) {
+    const error = new Error(`Invalid Splunk product: ${product}`);
+    error.status = 400;
+    throw error;
+  }
+  return normalized;
 }
 
 function toolSpecDescription({
@@ -593,6 +760,7 @@ export function createMcpServer({ name, version, splunkClient, configStore, vaul
   const allowSensitiveOutput = Boolean(runtimeEnv?.allowSensitiveOutput ?? false);
   const splunkDefaultEnvironment = String(runtimeEnv?.splunk?.defaultEnvironment ?? "default").trim() || "default";
   const splunkDefaultBaseUrl = String(runtimeEnv?.splunk?.defaultBaseUrl ?? "https://127.0.0.1:8089").trim();
+  const splunkDefaultProduct = normalizeSplunkProduct(runtimeEnv?.splunk?.defaultProduct ?? "enterprise");
   const splunkDefaultAuthMode = String(runtimeEnv?.splunk?.authMode ?? "splunk").trim().toLowerCase();
   const splunkNamespaceOwner = String(runtimeEnv?.splunk?.namespaceOwner ?? "-").trim() || "-";
   const splunkNamespaceApp = String(runtimeEnv?.splunk?.namespaceApp ?? "-").trim() || "-";
@@ -644,6 +812,7 @@ export function createMcpServer({ name, version, splunkClient, configStore, vaul
       userId: effectiveUserId,
       environment: effectiveEnvironment,
       configSource: fallback.source,
+      product: normalizeSplunkProduct(dbValue.product ?? splunkDefaultProduct),
       baseUrl: String(dbValue.baseUrl ?? splunkDefaultBaseUrl).trim() || splunkDefaultBaseUrl,
       authMode: String(dbValue.authMode ?? splunkDefaultAuthMode).trim().toLowerCase() || splunkDefaultAuthMode,
       namespaceOwner: String(dbValue.namespaceOwner ?? splunkNamespaceOwner).trim() || splunkNamespaceOwner,
@@ -668,15 +837,17 @@ export function createMcpServer({ name, version, splunkClient, configStore, vaul
     return secret && typeof secret === "object" ? secret : {};
   }
 
-  async function invokeSplunkRequest({ userId, environment, method, path, query, body, headers, bodyFormat }) {
+  async function invokeSplunkRequest({ userId, environment, product, method, path, query, body, headers, bodyFormat }) {
     const envConfig = await resolveSplunkEnvironmentConfig({ userId, environment });
     const authSecret = await resolveSplunkAuthSecret(envConfig.authSecretPath);
+    const effectiveProduct = product ? normalizeSplunkProduct(product) : envConfig.product;
 
     return {
       scope: {
         userId: envConfig.userId,
         environment: envConfig.environment,
         configSource: envConfig.configSource,
+        product: effectiveProduct,
         baseUrl: envConfig.baseUrl,
         authMode: envConfig.authMode,
         authSecretPath: envConfig.authSecretPath,
@@ -692,7 +863,8 @@ export function createMcpServer({ name, version, splunkClient, configStore, vaul
         headers,
         authMode: envConfig.authMode,
         authSecret,
-        bodyFormat
+        bodyFormat,
+        apiFamily: effectiveProduct
       })
     };
   }
@@ -772,6 +944,7 @@ export function createMcpServer({ name, version, splunkClient, configStore, vaul
         },
         splunkDefaults: {
           environment: splunkDefaultEnvironment,
+          product: splunkDefaultProduct,
           baseUrl: splunkDefaultBaseUrl,
           authMode: splunkDefaultAuthMode,
           namespaceOwner: splunkNamespaceOwner,
@@ -900,7 +1073,7 @@ export function createMcpServer({ name, version, splunkClient, configStore, vaul
       permissions: "none",
       envBehavior: "reads user-scoped Postgres config with default-user fallback.",
       params: "userId/environment optional.",
-      responseShape: "{ ok, status, data: { userId, environment, baseUrl, authMode, authSecretPath } }",
+      responseShape: "{ ok, status, data: { userId, environment, product, baseUrl, authMode, authSecretPath } }",
       failures: "500 config parsing errors.",
       prerequisites: "splunk_scope_info",
       followUps: "splunk_auth_secret_set, splunk_api_request",
@@ -924,7 +1097,7 @@ export function createMcpServer({ name, version, splunkClient, configStore, vaul
       risk: "medium",
       permissions: "authorizationKey when MCP_ADMIN_AUTH_KEY is enabled.",
       envBehavior: "writes {prefix}.{environment} per user.",
-      params: "environment required; userId/baseUrl/authMode/namespace/authSecretPath optional.",
+      params: "environment required; userId/product/baseUrl/authMode/namespace/authSecretPath optional.",
       responseShape: "{ ok, status, data: row }",
       failures: "401 unauthorized, 5xx Postgres errors.",
       prerequisites: "splunk_environment_get",
@@ -935,8 +1108,9 @@ export function createMcpServer({ name, version, splunkClient, configStore, vaul
     {
       userId: z.string().min(1).optional(),
       environment: z.string().min(1),
+      product: z.enum(["enterprise", "soar"]).optional(),
       baseUrl: z.string().url().optional(),
-      authMode: z.enum(["splunk", "bearer", "basic", "none"]).optional(),
+      authMode: z.enum(SPLUNK_AUTH_MODES).optional(),
       namespaceOwner: z.string().min(1).optional(),
       namespaceApp: z.string().min(1).optional(),
       authSecretPath: z.string().min(1).optional(),
@@ -953,6 +1127,7 @@ export function createMcpServer({ name, version, splunkClient, configStore, vaul
       const row = await configStore.setConfig(
         `${splunkEnvironmentConfigPrefix}.${String(args.environment).trim()}`,
         {
+          ...(args.product ? { product: normalizeSplunkProduct(args.product) } : {}),
           ...(args.baseUrl ? { baseUrl: args.baseUrl } : {}),
           ...(args.authMode ? { authMode: args.authMode } : {}),
           ...(args.namespaceOwner ? { namespaceOwner: args.namespaceOwner } : {}),
@@ -975,7 +1150,7 @@ export function createMcpServer({ name, version, splunkClient, configStore, vaul
       risk: "high",
       permissions: "authorizationKey when MCP_ADMIN_AUTH_KEY is enabled.",
       envBehavior: "writes to user/environment Vault path, defaulting to app-scoped path.",
-      params: "userId/environment optional; path optional; token/sessionKey/username/password optional (at least one required).",
+      params: "userId/environment optional; path optional; token/phAuthToken/sessionKey/username/password optional (at least one required).",
       responseShape: "{ ok, status, data: { path, updatedAt } }",
       failures: "401 unauthorized, 400 empty payload, 5xx Vault errors.",
       prerequisites: "splunk_environment_get",
@@ -987,14 +1162,15 @@ export function createMcpServer({ name, version, splunkClient, configStore, vaul
       userId: z.string().min(1).optional(),
       environment: z.string().min(1).optional(),
       path: z.string().min(1).optional(),
-      authMode: z.enum(["splunk", "bearer", "basic", "none"]).optional(),
+      authMode: z.enum(SPLUNK_AUTH_MODES).optional(),
       token: z.string().min(1).optional(),
+      phAuthToken: z.string().min(1).optional(),
       sessionKey: z.string().min(1).optional(),
       username: z.string().min(1).optional(),
       password: z.string().optional(),
       authorizationKey: z.string().min(1).optional()
     },
-    withErrorHandling(async ({ userId, environment, path, authMode, token, sessionKey, username, password, authorizationKey }) => {
+    withErrorHandling(async ({ userId, environment, path, authMode, token, phAuthToken, sessionKey, username, password, authorizationKey }) => {
       assertAuthorized(authorizationKey);
       if (!vaultService) {
         const error = new Error("Vault service is not configured");
@@ -1007,6 +1183,7 @@ export function createMcpServer({ name, version, splunkClient, configStore, vaul
       const payload = {
         ...(authMode ? { authMode } : {}),
         ...(token ? { token } : {}),
+        ...(phAuthToken ? { phAuthToken } : {}),
         ...(sessionKey ? { sessionKey } : {}),
         ...(username ? { username } : {}),
         ...(password !== undefined ? { password } : {}),
@@ -1014,7 +1191,7 @@ export function createMcpServer({ name, version, splunkClient, configStore, vaul
         updatedBy: resolveUserId(userId)
       };
 
-      if (!["token", "sessionKey", "username", "password"].some((key) => key in payload)) {
+      if (!["token", "phAuthToken", "sessionKey", "username", "password"].some((key) => key in payload)) {
         const error = new Error("At least one credential field must be provided");
         error.status = 400;
         throw error;
@@ -1218,19 +1395,24 @@ export function createMcpServer({ name, version, splunkClient, configStore, vaul
 
   server.tool(
     "splunk_health_check",
-    "GET /services/server/info using resolved user/environment auth.",
+    "GET product-specific health endpoint using resolved user/environment auth.",
     { userId: z.string().min(1).optional(), environment: z.string().min(1).optional() },
-    withErrorHandling(async ({ userId, environment }) => ({
-      ok: true,
-      status: 200,
-      data: await invokeSplunkRequest({
-        userId,
-        environment,
-        method: "GET",
-        path: "/services/server/info",
-        query: { output_mode: "json" }
-      })
-    }))
+    withErrorHandling(async ({ userId, environment }) => {
+      const resolved = await resolveSplunkEnvironmentConfig({ userId, environment });
+      const isSoar = resolved.product === "soar";
+      return {
+        ok: true,
+        status: 200,
+        data: await invokeSplunkRequest({
+          userId,
+          environment,
+          product: resolved.product,
+          method: "GET",
+          path: isSoar ? "/rest/container" : "/services/server/info",
+          query: isSoar ? { page_size: 1 } : { output_mode: "json" }
+        })
+      };
+    })
   );
 
   server.tool(
@@ -1410,19 +1592,80 @@ export function createMcpServer({ name, version, splunkClient, configStore, vaul
   server.tool(
     "splunk_api_request",
     toolSpecDescription({
-      purpose: "you need full Splunk REST coverage beyond dedicated tools.",
+      purpose: "you need full Splunk REST coverage beyond dedicated tools, including Enterprise and SOAR request families.",
       doNotUse: "a dedicated tool already matches your use case and is safer.",
       category: "read-write",
       risk: "high",
       permissions: "mutating calls require authorizationKey when MCP_ADMIN_AUTH_KEY is set.",
       envBehavior: "reads user/environment config from Postgres and auth secret from Vault.",
-      params: "method/path required; query/body/headers optional; bodyFormat json|form|raw.",
+      params: "method/path required; product override optional; query/body/headers optional; bodyFormat json|form|raw.",
       responseShape: "{ ok, status, data: { scope, response, requestRisk } }",
       failures: "400 invalid path, 401 unauthorized, 4xx/5xx upstream failures.",
       prerequisites: "splunk_environment_get, splunk_auth_secret_set",
       followUps: "splunk_search_job_status, splunk_list_endpoints",
       warnings: "destructive endpoints can impact Splunk data and topology.",
-      examples: "{\"name\":\"splunk_api_request\",\"arguments\":{\"method\":\"GET\",\"path\":\"/services/server/info\"}}"
+      examples:
+        "{\"name\":\"splunk_api_request\",\"arguments\":{\"method\":\"GET\",\"path\":\"/services/server/info\"}} | {\"name\":\"splunk_api_request\",\"arguments\":{\"product\":\"soar\",\"method\":\"GET\",\"path\":\"/rest/container/1\"}}"
+    }),
+    {
+      userId: z.string().min(1).optional(),
+      environment: z.string().min(1).optional(),
+      product: z.enum(["enterprise", "soar"]).optional(),
+      method: z.string().min(1),
+      path: z.string().min(1),
+      query: z
+        .record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.array(z.union([z.string(), z.number()]))]))
+        .optional(),
+      body: z.unknown().optional(),
+      headers: z.record(z.string(), z.string()).optional(),
+      bodyFormat: z.enum(["json", "form", "raw"]).optional(),
+      authorizationKey: z.string().min(1).optional()
+    },
+    withErrorHandling(async ({ userId, environment, product, method, path, query, body, headers, bodyFormat, authorizationKey }) => {
+      const normalizedMethod = normalizeMethod(method);
+      const normalizedPath = normalizePath(path);
+
+      if (MUTATING_METHODS.has(normalizedMethod)) {
+        assertAuthorized(authorizationKey);
+      }
+
+      return {
+        ok: true,
+        status: 200,
+        data: {
+          ...(await invokeSplunkRequest({
+            userId,
+            environment,
+            product,
+            method: normalizedMethod,
+            path: normalizedPath,
+            query,
+            body,
+            headers,
+            bodyFormat
+          })),
+          requestRisk: isHighRiskSplunkPath(normalizedPath) ? "high" : MUTATING_METHODS.has(normalizedMethod) ? "medium" : "low"
+        }
+      };
+    })
+  );
+
+  server.tool(
+    "splunk_soar_api_request",
+    toolSpecDescription({
+      purpose: "you need Splunk SOAR (Phantom) API coverage using /rest endpoints.",
+      doNotUse: "you need Splunk Enterprise /services endpoints.",
+      category: "read-write",
+      risk: "high",
+      permissions: "mutating calls require authorizationKey when MCP_ADMIN_AUTH_KEY is set.",
+      envBehavior: "forces product=soar while still resolving baseUrl/auth secret from user/environment config.",
+      params: "method/path required; path must start with /rest; query/body/headers optional; bodyFormat json|form|raw.",
+      responseShape: "{ ok, status, data: { scope, response, requestRisk } }",
+      failures: "400 invalid path, 401 unauthorized, 4xx/5xx upstream failures.",
+      prerequisites: "splunk_environment_set (product=soar), splunk_auth_secret_set",
+      followUps: "splunk_auth_secret_metadata",
+      warnings: "destructive endpoints can mutate incidents/artifacts and orchestration state.",
+      examples: "{\"name\":\"splunk_soar_api_request\",\"arguments\":{\"method\":\"GET\",\"path\":\"/rest/container/1\"}}"
     }),
     {
       userId: z.string().min(1).optional(),
@@ -1452,6 +1695,7 @@ export function createMcpServer({ name, version, splunkClient, configStore, vaul
           ...(await invokeSplunkRequest({
             userId,
             environment,
+            product: "soar",
             method: normalizedMethod,
             path: normalizedPath,
             query,
@@ -1461,6 +1705,168 @@ export function createMcpServer({ name, version, splunkClient, configStore, vaul
           })),
           requestRisk: isHighRiskSplunkPath(normalizedPath) ? "high" : MUTATING_METHODS.has(normalizedMethod) ? "medium" : "low"
         }
+      };
+    })
+  );
+
+  server.tool(
+    "splunk_soar_container_get",
+    "GET /rest/container/{containerId} for SOAR/Phantom.",
+    {
+      userId: z.string().min(1).optional(),
+      environment: z.string().min(1).optional(),
+      containerId: z.union([z.number().int().min(1), z.string().min(1)])
+    },
+    withErrorHandling(async ({ userId, environment, containerId }) => ({
+      ok: true,
+      status: 200,
+      data: await invokeSplunkRequest({
+        userId,
+        environment,
+        product: "soar",
+        method: "GET",
+        path: `/rest/container/${encodeURIComponent(String(containerId))}`
+      })
+    }))
+  );
+
+  server.tool(
+    "splunk_soar_container_find_by_source",
+    "GET /rest/container filtered by source_data_identifier for SOAR/Phantom dedupe lookups.",
+    {
+      userId: z.string().min(1).optional(),
+      environment: z.string().min(1).optional(),
+      sourceDataIdentifier: z.string().min(1),
+      pageSize: z.number().int().min(1).max(200).optional(),
+      page: z.number().int().min(0).optional()
+    },
+    withErrorHandling(async ({ userId, environment, sourceDataIdentifier, pageSize = 1, page = 0 }) => ({
+      ok: true,
+      status: 200,
+      data: await invokeSplunkRequest({
+        userId,
+        environment,
+        product: "soar",
+        method: "GET",
+        path: "/rest/container",
+        query: {
+          _filter_source_data_identifier: `"${sourceDataIdentifier}"`,
+          page_size: pageSize,
+          page
+        }
+      })
+    }))
+  );
+
+  server.tool(
+    "splunk_soar_container_create",
+    "POST /rest/container for SOAR/Phantom container creation.",
+    {
+      userId: z.string().min(1).optional(),
+      environment: z.string().min(1).optional(),
+      name: z.string().min(1),
+      label: z.string().min(1),
+      description: z.string().optional(),
+      severity: z.enum(["low", "medium", "high"]).optional(),
+      sensitivity: z.enum(["white", "green", "amber", "red"]).optional(),
+      sourceDataIdentifier: z.string().min(1).optional(),
+      runAutomation: z.boolean().optional(),
+      authorizationKey: z.string().min(1).optional()
+    },
+    withErrorHandling(async ({
+      userId,
+      environment,
+      name,
+      label,
+      description,
+      severity,
+      sensitivity,
+      sourceDataIdentifier,
+      runAutomation,
+      authorizationKey
+    }) => {
+      assertAuthorized(authorizationKey);
+      return {
+        ok: true,
+        status: 200,
+        data: await invokeSplunkRequest({
+          userId,
+          environment,
+          product: "soar",
+          method: "POST",
+          path: "/rest/container",
+          body: {
+            name,
+            label,
+            ...(description !== undefined ? { description } : {}),
+            ...(severity !== undefined ? { severity } : {}),
+            ...(sensitivity !== undefined ? { sensitivity } : {}),
+            ...(sourceDataIdentifier !== undefined ? { source_data_identifier: sourceDataIdentifier } : {}),
+            ...(runAutomation !== undefined ? { run_automation: runAutomation } : {})
+          },
+          bodyFormat: "json"
+        })
+      };
+    })
+  );
+
+  server.tool(
+    "splunk_soar_artifact_create",
+    "POST /rest/artifact for SOAR/Phantom artifact creation.",
+    {
+      userId: z.string().min(1).optional(),
+      environment: z.string().min(1).optional(),
+      containerId: z.union([z.number().int().min(1), z.string().regex(/^\d+$/)]),
+      label: z.string().min(1),
+      name: z.string().min(1).optional(),
+      sourceDataIdentifier: z.string().min(1).optional(),
+      severity: z.enum(["low", "medium", "high"]).optional(),
+      runAutomation: z.boolean().optional(),
+      cef: z.record(z.string(), z.unknown()).optional(),
+      data: z.record(z.string(), z.unknown()).optional(),
+      authorizationKey: z.string().min(1).optional()
+    },
+    withErrorHandling(async ({
+      userId,
+      environment,
+      containerId,
+      label,
+      name,
+      sourceDataIdentifier,
+      severity,
+      runAutomation,
+      cef,
+      data,
+      authorizationKey
+    }) => {
+      assertAuthorized(authorizationKey);
+      const normalizedContainerId = Number(containerId);
+      if (!Number.isInteger(normalizedContainerId) || normalizedContainerId < 1) {
+        const error = new Error("containerId must be a positive integer");
+        error.status = 400;
+        throw error;
+      }
+      return {
+        ok: true,
+        status: 200,
+        data: await invokeSplunkRequest({
+          userId,
+          environment,
+          product: "soar",
+          method: "POST",
+          path: "/rest/artifact",
+          body: {
+            container_id: normalizedContainerId,
+            label,
+            ...(name !== undefined ? { name } : {}),
+            ...(sourceDataIdentifier !== undefined ? { source_data_identifier: sourceDataIdentifier } : {}),
+            ...(severity !== undefined ? { severity } : {}),
+            ...(runAutomation !== undefined ? { run_automation: runAutomation } : {}),
+            ...(cef !== undefined ? { cef } : {}),
+            ...(data !== undefined ? { data } : {})
+          },
+          bodyFormat: "json"
+        })
       };
     })
   );

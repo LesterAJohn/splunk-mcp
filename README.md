@@ -1,6 +1,6 @@
 # splunk-mcp
 
-Splunk Enterprise REST API MCP server built from the skeleton pattern, with:
+Splunk Enterprise and Splunk SOAR (Phantom) REST API MCP server built from the skeleton pattern, with:
 - Multi-user scoping for all token and environment operations
 - Persistent secrets in Vault
 - Persistent non-secret configuration in Postgres
@@ -60,12 +60,20 @@ User fallback behavior:
 Coverage approach:
 - MCP-native query suggestion and schema discovery via mcp_tool_discovery
 - Dedicated tools for common operations (health, context, search jobs, saved searches, indexes, users)
-- Generic splunk_api_request for full path/method coverage
+- Generic splunk_api_request for full path/method coverage (Enterprise and SOAR)
+- Dedicated splunk_soar_api_request for SOAR/Phantom `/rest` endpoints
+- Dedicated SOAR convenience tools for container/artifact workflows
 - Bundled endpoint catalog derived from Splunk Enterprise REST API Reference 10.4
 
 Catalog size in this repository:
 - 427 endpoint path patterns in src/data/splunk-api-catalog.json
 - Human-readable grouped report in docs/splunk-api-catalog.md
+
+SOAR/Phantom support notes:
+- Set `product` to `soar` in `splunk_environment_set`, or pass `product: "soar"` in `splunk_api_request`.
+- SOAR path validation requires `/rest`.
+- Use `authMode: "phantom"` and store token as `phAuthToken` (or `token`) in Vault.
+- Reference: https://docs.splunk.com/Documentation/Phantom/4.10.7/PlatformAPI/Using
 
 ## Environment Variables
 
@@ -79,8 +87,9 @@ Core variables:
 
 Splunk defaults:
 - SPLUNK_DEFAULT_ENVIRONMENT
+- SPLUNK_PRODUCT (`enterprise` | `soar`)
 - SPLUNK_BASE_URL
-- SPLUNK_AUTH_MODE
+- SPLUNK_AUTH_MODE (`splunk` | `bearer` | `basic` | `phantom` | `none`)
 - SPLUNK_NAMESPACE_OWNER
 - SPLUNK_NAMESPACE_APP
 - SPLUNK_ENVIRONMENT_CONFIG_PREFIX
@@ -175,7 +184,7 @@ Mutating tools require authorizationKey when MCP_ADMIN_AUTH_KEY is set.
 - Do not use: to read secrets.
 - Risk: read-only, low.
 - Prerequisites: splunk_scope_info.
-- Response: baseUrl/authMode/namespace/authSecretPath.
+- Response: product/baseUrl/authMode/namespace/authSecretPath.
 - Example:
   - {"name":"splunk_environment_get","arguments":{"environment":"prod"}}
 
@@ -236,7 +245,7 @@ Mutating tools require authorizationKey when MCP_ADMIN_AUTH_KEY is set.
   - {"name":"mcp_token_deactivate","arguments":{"targetUserId":"default","tokenHash":"<sha256>","authorizationKey":"<key>"}}
 
 ### splunk_health_check
-- When to use: verify authenticated connectivity via /services/server/info.
+- When to use: verify authenticated connectivity for the configured product.
 - Do not use: deep subsystem diagnostics.
 - Risk: read-only, low.
 - Response: scope + upstream response payload.
@@ -298,17 +307,74 @@ Mutating tools require authorizationKey when MCP_ADMIN_AUTH_KEY is set.
   - {"name":"splunk_users_list","arguments":{}}
 
 ### splunk_api_request
-- When to use: invoke any Splunk REST path for full coverage.
+- When to use: invoke any Splunk Enterprise or SOAR REST path for full coverage.
 - Do not use: if a dedicated tool already fits.
 - Risk: mixed, high for mutating paths.
 - Permissions: authorizationKey required for mutating methods when admin key is set.
 - Parameter constraints:
-  - path must start with /services or /servicesNS
+  - product optional: `enterprise` or `soar`
+  - Enterprise path must start with /services or /servicesNS
+  - SOAR path must start with /rest
   - bodyFormat: json | form | raw
 - Common failures: invalid path, auth failure, upstream 4xx/5xx.
 - Safety warnings: destructive operations may impact cluster state/data.
 - Example:
   - {"name":"splunk_api_request","arguments":{"method":"GET","path":"/services/server/info","query":{"output_mode":"json"}}}
+  - {"name":"splunk_api_request","arguments":{"product":"soar","method":"GET","path":"/rest/container/1"}}
+
+### splunk_soar_api_request
+- When to use: invoke Splunk SOAR/Phantom `/rest` paths.
+- Do not use: for Splunk Enterprise `/services` endpoints.
+- Risk: mixed, high for mutating paths.
+- Permissions: authorizationKey required for mutating methods when admin key is set.
+- Parameter constraints:
+  - path must start with /rest
+  - bodyFormat: json | form | raw
+- Example:
+  - {"name":"splunk_soar_api_request","arguments":{"method":"GET","path":"/rest/container/1"}}
+
+### splunk_soar_container_get
+- When to use: fetch one SOAR/Phantom container by id.
+- Do not use: for container creation.
+- Risk: read-only, low.
+- Parameters:
+  - containerId (required)
+- Example:
+  - {"name":"splunk_soar_container_get","arguments":{"containerId":1}}
+
+### splunk_soar_container_find_by_source
+- When to use: dedupe lookup by `source_data_identifier` before creating new containers.
+- Do not use: when you already have a container id.
+- Risk: read-only, low.
+- Parameters:
+  - sourceDataIdentifier (required)
+  - pageSize, page (optional)
+- Example:
+  - {"name":"splunk_soar_container_find_by_source","arguments":{"sourceDataIdentifier":"12387","pageSize":1}}
+
+### splunk_soar_container_create
+- When to use: create a SOAR/Phantom container (incident).
+- Do not use: when you only need to query existing records.
+- Risk: mutating, high.
+- Permissions: authorizationKey required for mutating methods when admin key is set.
+- Parameters:
+  - name (required)
+  - label (required)
+  - description, severity, sensitivity, sourceDataIdentifier, runAutomation (optional)
+- Example:
+  - {"name":"splunk_soar_container_create","arguments":{"name":"new container","label":"events","runAutomation":false}}
+
+### splunk_soar_artifact_create
+- When to use: create an artifact linked to a SOAR/Phantom container.
+- Do not use: before a target container exists.
+- Risk: mutating, high.
+- Permissions: authorizationKey required for mutating methods when admin key is set.
+- Parameters:
+  - containerId (required)
+  - label (required)
+  - name, sourceDataIdentifier, severity, runAutomation, cef, data (optional)
+- Example:
+  - {"name":"splunk_soar_artifact_create","arguments":{"containerId":1,"label":"event","cef":{"sourceAddress":"1.2.3.4"}}}
 
 ## Security Notes
 

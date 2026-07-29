@@ -5,7 +5,8 @@ dotenv.config();
 const TRANSPORT_MODES = new Set(["stdio", "http", "both"]);
 const HTTP_AUTH_MODES = new Set(["token", "oauth2", "both"]);
 const HTTP_TOKEN_SOURCES = new Set(["static", "vault", "both"]);
-const SPLUNK_AUTH_MODES = new Set(["splunk", "bearer", "basic", "none"]);
+const SPLUNK_AUTH_MODES = new Set(["splunk", "bearer", "basic", "phantom", "none"]);
+const SPLUNK_PRODUCTS = new Set(["enterprise", "soar"]);
 
 function enumValue(name, fallback, allowedValues) {
   const value = String(process.env[name] ?? fallback).toLowerCase();
@@ -86,6 +87,7 @@ function normalizeAppName(value, fallback = "skeleton") {
 const transportMode = enumValue("MCP_TRANSPORT_MODE", "stdio", TRANSPORT_MODES);
 const httpAuthMode = enumValue("MCP_HTTP_AUTH_MODE", "token", HTTP_AUTH_MODES);
 const httpTokenSource = enumValue("MCP_HTTP_TOKEN_SOURCE", "vault", HTTP_TOKEN_SOURCES);
+const splunkDefaultProduct = enumValue("SPLUNK_PRODUCT", "enterprise", SPLUNK_PRODUCTS);
 const splunkAuthMode = enumValue("SPLUNK_AUTH_MODE", "splunk", SPLUNK_AUTH_MODES);
 const appName = normalizeAppName(process.env.APP_NAME, "skeleton");
 
@@ -134,6 +136,7 @@ export const env = {
   },
   splunk: {
     defaultEnvironment: required("SPLUNK_DEFAULT_ENVIRONMENT", "default"),
+    defaultProduct: splunkDefaultProduct,
     defaultBaseUrl: required("SPLUNK_BASE_URL", "https://127.0.0.1:8089"),
     timeoutMs: positiveNumber("SPLUNK_TIMEOUT_MS", "30000"),
     authMode: splunkAuthMode,

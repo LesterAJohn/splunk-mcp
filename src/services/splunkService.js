@@ -1,4 +1,5 @@
 const DEFAULT_TIMEOUT_MS = 30000;
+const API_FAMILIES = new Set(["enterprise", "soar"]);
 
 function normalizeMethod(method) {
   return String(method ?? "GET").trim().toUpperCase();
@@ -74,12 +75,12 @@ function asFormBody(payload) {
   return params.toString();
 }
 
-function buildAuthHeader(authMode, secret) {
+function buildAuthHeaders(authMode, secret) {
   const normalized = String(authMode ?? "none").toLowerCase();
   const source = secret && typeof secret === "object" ? secret : {};
 
   if (normalized === "none") {
-    return "";
+    return {};
   }
 
   if (normalized === "bearer") {
@@ -87,7 +88,7 @@ function buildAuthHeader(authMode, secret) {
     if (!token) {
       throw new Error("Missing bearer token in Vault auth secret");
     }
-    return `Bearer ${token}`;
+    return { Authorization: `Bearer ${token}` };
   }
 
   if (normalized === "splunk") {
@@ -95,7 +96,7 @@ function buildAuthHeader(authMode, secret) {
     if (!sessionKey) {
       throw new Error("Missing Splunk session key/token in Vault auth secret");
     }
-    return `Splunk ${sessionKey}`;
+    return { Authorization: `Splunk ${sessionKey}` };
   }
 
   if (normalized === "basic") {
@@ -106,10 +107,45 @@ function buildAuthHeader(authMode, secret) {
     }
 
     const credential = Buffer.from(`${username}:${password}`).toString("base64");
-    return `Basic ${credential}`;
+    return { Authorization: `Basic ${credential}` };
+  }
+
+  if (normalized === "phantom") {
+    const token = String(source.phAuthToken ?? source.token ?? "").trim();
+    if (!token) {
+      throw new Error("Missing Phantom auth token in Vault auth secret");
+    }
+    return { "ph-auth-token": token };
   }
 
   throw new Error(`Unsupported Splunk auth mode: ${authMode}`);
+}
+
+function normalizeApiFamily(apiFamily) {
+  const normalized = String(apiFamily ?? "enterprise").trim().toLowerCase();
+  if (!API_FAMILIES.has(normalized)) {
+    const error = new Error(`Unsupported API family: ${apiFamily}`);
+    error.status = 400;
+    throw error;
+  }
+  return normalized;
+}
+
+function assertValidPathForApiFamily(path, apiFamily) {
+  if (apiFamily === "enterprise") {
+    if (!path.startsWith("/services") && !path.startsWith("/servicesNS")) {
+      const error = new Error("Splunk REST path must start with /services or /servicesNS");
+      error.status = 400;
+      throw error;
+    }
+    return;
+  }
+
+  if (!path.startsWith("/rest")) {
+    const error = new Error("Splunk SOAR (Phantom) REST path must start with /rest");
+    error.status = 400;
+    throw error;
+  }
 }
 
 export class SplunkServiceClient {
@@ -134,16 +170,14 @@ export class SplunkServiceClient {
     headers = {},
     authMode = "none",
     authSecret,
-    bodyFormat = "form"
+    bodyFormat = "form",
+    apiFamily = "enterprise"
   }) {
     const upperMethod = normalizeMethod(method);
     const normalizedPath = normalizePath(path);
+    const normalizedApiFamily = normalizeApiFamily(apiFamily);
 
-    if (!normalizedPath.startsWith("/services") && !normalizedPath.startsWith("/servicesNS")) {
-      const error = new Error("Splunk REST path must start with /services or /servicesNS");
-      error.status = 400;
-      throw error;
-    }
+    assertValidPathForApiFamily(normalizedPath, normalizedApiFamily);
 
     const url = joinUrl(baseUrl, normalizedPath, query);
     const requestHeaders = {
@@ -151,10 +185,7 @@ export class SplunkServiceClient {
       ...headers
     };
 
-    const authorization = buildAuthHeader(authMode, authSecret);
-    if (authorization) {
-      requestHeaders.Authorization = authorization;
-    }
+    Object.assign(requestHeaders, buildAuthHeaders(authMode, authSecret));
 
     let payload;
     if (body !== undefined && body !== null && !["GET", "HEAD"].includes(upperMethod)) {
@@ -197,6 +228,7 @@ export class SplunkServiceClient {
 
       return {
         method: upperMethod,
+        apiFamily: normalizedApiFamily,
         path: url.pathname,
         url: url.toString(),
         status: response.status,
